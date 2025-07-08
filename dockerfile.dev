@@ -1,0 +1,14 @@
+##### BASE STAGE #####
+FROM oven/bun:latest
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY package.json ./
+RUN bun install
+
+COPY . .
+
+# Entrypoint
+CMD ["/bin/sh", "-c", "[ ! -d node_modules ] && bun install; bun run dev"]
