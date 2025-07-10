@@ -23,6 +23,14 @@ export default component$(() => {
           />
         )}
         <RouterHead />
+        <link
+          rel="manifest"
+          href={`${import.meta.env.BASE_URL}manifest.json`}
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
       </head>
       <body lang="en">
         <RouterOutlet />
