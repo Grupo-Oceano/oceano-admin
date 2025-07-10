@@ -17,7 +17,7 @@ export default component$(() => {
                 alt=""
                 class="max-w-24 mask-radial-[100%_100%] mask-radial-from-75% mask-radial-at-left object-cover p-2"
               />
-              <h3 class="my-3 flex items-center border-l-4 border-gray-300 ps-4 text-start text-2xl font-bold text-gray-500 dark:border-gray-600 dark:text-gray-600">
+              <h3 class="my-3 flex items-center border-l-4 border-gray-300 ps-4 text-start text-2xl font-bold text-gray-500 dark:border-gray-600 dark:text-gray-300">
                 Oceano Admin
               </h3>
             </div>

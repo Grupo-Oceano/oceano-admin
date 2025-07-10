@@ -1,13 +1,13 @@
-import { User } from "~/models/user.model";
-import { ApiCall } from "~/utils/axios";
+import { ClientSideAxios } from "~/lib/client-side-axios";
+import { UserLogin } from "~/models/user.model";
 
-const checkCookieValidity = async (cookie: string): Promise<User | null> => {
-  try {
-    const user = await ApiCall.post("auth/check-cookie", { cookie });
-    return user;
-  } catch (err) {
-    return null;
-  }
+const login = async (username: string, password: string) => {
+  return await ClientSideAxios.post<UserLogin>("auth/login", {
+    username,
+    password,
+  });
 };
 
-export { checkCookieValidity };
+export const Auth = {
+  login,
+};

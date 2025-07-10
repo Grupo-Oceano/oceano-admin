@@ -35,7 +35,7 @@ export default component$<Props>(({ of: form, ...props }) => {
     <Expandable expanded={!!form.response.message}>
       <div
         class={clsx(
-          "px-8 md:text-lg lg:px-10 lg:text-xl",
+          "px-4",
           frozenResponse.value?.status === "success" &&
             "text-emerald-500 dark:text-emerald-400",
           frozenResponse.value?.status === "error" &&

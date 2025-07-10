@@ -2,12 +2,12 @@
  * This is the base config for vite.
  * When building, the adapter config is used which loads this file and extends it.
  */
-import { defineConfig, type UserConfig } from "vite";
-import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
+import { qwikVite } from "@builder.io/qwik/optimizer";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
-import tailwindcss from "@tailwindcss/vite";
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
   dependencies: PkgDep;
@@ -48,6 +48,14 @@ export default defineConfig(({ command, mode }): UserConfig => {
       headers: {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",
+      },
+      proxy: {
+        "/webhook/api": {
+          target: process.env.API_URL,
+          rewrite: (path) => path.replace(/^\/webhook\/api/, "/"),
+          changeOrigin: true,
+          secure: false, // Set to true if using HTTPS
+        },
       },
     },
     preview: {

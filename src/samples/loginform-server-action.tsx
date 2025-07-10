@@ -1,48 +1,84 @@
 import { $, component$, QRL } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { globalAction$, routeLoader$ } from "@builder.io/qwik-city";
 import {
+  formAction$,
   InitialValues,
   SubmitHandler,
   useForm,
   valiForm$,
 } from "@modular-forms/qwik";
+import * as v from "valibot";
 import { Auth } from "~/api/auth";
-import { LoginForm, LoginSchema } from "~/common/forms/login-form";
 import ActionButton from "~/components/forms/ActionButton";
 import Response from "~/components/forms/Response";
 import TextInput from "~/components/forms/TextInput";
 
-export const useFormLoader = routeLoader$<InitialValues<LoginForm>>(() => ({
+const LoginSchema = v.object({
+  username: v.pipe(v.string(), v.nonEmpty("Please enter your username.")),
+  password: v.pipe(
+    v.string(),
+    v.nonEmpty("Please enter your password."),
+    v.minLength(8, "Your password must have 8 characters or more."),
+  ),
+});
+
+type LoginForm = v.InferInput<typeof LoginSchema>;
+
+const getInitFormValues = (): InitialValues<LoginForm> => ({
   username: "",
   password: "",
-}));
+});
+
+// Note: State is kept in local variable for demo purposes
+let loginFormValues: InitialValues<LoginForm> = getInitFormValues();
+
+export const useResetFormAction = globalAction$(() => {
+  loginFormValues = getInitFormValues();
+});
+
+export const useFormLoader = routeLoader$<InitialValues<LoginForm>>(
+  () => loginFormValues,
+);
+
+export const useFormAction = formAction$<LoginForm>(
+  async (values, { cookie }) => {
+    // Runs on server
+    const [error, data] = await Auth.login(values.username, values.password);
+
+    if (error || !data) {
+      return {
+        status: "error",
+        message: error?.message,
+      };
+    }
+
+    // Set cookie for auth
+    cookie.set("auth_token", data?.data?.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+
+    return {
+      status: "success",
+      message: data.message,
+    };
+  },
+  valiForm$(LoginSchema),
+);
 
 export default component$(() => {
   const [loginForm, { Form, Field }] = useForm<LoginForm>({
     loader: useFormLoader(),
-    validate: valiForm$(LoginSchema), // ✅ Only validate client-side
+    action: useFormAction(),
+    validate: valiForm$(LoginSchema),
   });
 
-  const handleSubmit: QRL<SubmitHandler<LoginForm>> = $(
-    async (values, event) => {
-      const [error, res] = await Auth.login(values.username, values.password);
+  const resetFormAction = useResetFormAction();
 
-      if (error || !res) {
-        return (loginForm.response = {
-          status: "error",
-          message: error?.message,
-        });
-      }
-
-      loginForm.response = {
-        status: "success",
-        message: res.message,
-      };
-
-      // Redirect after successful login (replace '/dashboard' with your target route)
-      window.location.href = "/home";
-    },
-  );
+  const handleSubmit: QRL<SubmitHandler<LoginForm>> = $((values, event) => {
+    console.log(values);
+  });
 
   return (
     <div class="flex flex-col gap-3 bg-transparent px-8 shadow-2xl backdrop-blur-lg lg:max-w-none lg:px-4 lg:shadow-none lg:backdrop-blur-none">

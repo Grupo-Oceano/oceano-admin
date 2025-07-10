@@ -3,9 +3,6 @@ export interface User {
   password?: string;
 }
 
-export enum Cookies {
-  AUTH = "auth",
-  SESSION = "session",
-  CSRF = "csrf",
-  JWT = "jwt",
+export interface UserLogin extends User {
+  token: string;
 }
