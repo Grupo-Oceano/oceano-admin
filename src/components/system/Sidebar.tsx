@@ -1,0 +1,75 @@
+import { component$ } from "@builder.io/qwik";
+import { gridSectionClass } from "~/common/consts";
+import { NavLink } from "./Navlink";
+
+export default component$(() => {
+  const menuItems: Array<{
+    type: "separator" | "item";
+    label?: string;
+    icon?: string;
+    href?: string;
+  }> = [
+    { type: "separator", label: "Main" },
+    {
+      type: "item",
+      label: "Dashboard",
+      icon: "dashboard",
+      href: "/home/dashboard",
+    },
+    {
+      type: "item",
+      label: "Settings",
+      icon: "settings",
+      href: "/home/settings",
+    },
+    { type: "item", label: "Profile", icon: "person", href: "/home/profile" },
+  ];
+
+  return (
+    <div class={["h-fill flex flex-col gap-4 border", gridSectionClass]}>
+      <a class="flex cursor-pointer flex-row content-between gap-1">
+        <img
+          src={`/favicon.png`}
+          alt=""
+          class="max-h-18 mask-radial-[100%_100%] mask-radial-from-75% mask-radial-at-left object-cover p-2"
+        />
+        <h6 class="my-3 flex items-center border-l-4 border-gray-300 ps-4 text-start text-gray-500 dark:border-gray-600 dark:text-gray-300">
+          Oceano Admin
+        </h6>
+      </a>
+
+      <div class="flex w-full flex-row items-center gap-2">
+        <hr class="w-full rounded-b-full border-1 border-gray-300 opacity-75 dark:border-gray-600" />
+        <small class="text-gray-500 dark:text-gray-300">Home</small>
+        <hr class="w-full rounded-b-full border-1 border-gray-300 opacity-75 dark:border-gray-600" />
+      </div>
+
+      <div class="flex w-full flex-col">
+        {menuItems.map((item, index) => {
+          if (item.type === "separator") {
+            return (
+              <p class="m-2 font-bold text-gray-500 opacity-30 dark:text-gray-300">
+                {item.label}
+              </p>
+            );
+          }
+
+          return (
+            <NavLink
+              href={item.href!}
+              activeClass="bg-gray-200 dark:bg-gray-600 text-sky-600 dark:text-sky-400"
+              class="group mb-3 flex cursor-pointer flex-row content-between gap-1 rounded-md p-2 transition-all duration-200 hover:bg-gray-200 hover:text-sky-600 hover:dark:bg-gray-600 hover:dark:text-sky-400"
+            >
+              <span class="material-symbols-rounded mr-2 self-center text-lg text-inherit">
+                {item.icon}
+              </span>
+              <span class="self-center text-lg text-inherit transition-all duration-200">
+                {item.label}
+              </span>
+            </NavLink>
+          );
+        })}
+      </div>
+    </div>
+  );
+});

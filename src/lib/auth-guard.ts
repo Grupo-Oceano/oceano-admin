@@ -16,8 +16,8 @@ export const authGuard: RequestHandler = async ({
 
   // Always check if authCookie exists and is valid
   if (authCookie) {
-    const [error, res] = await ServerSideAxios.get<User>("auth/check-cookie", {
-      cookie,
+    const [error, res] = await ServerSideAxios.post<User>("auth/check-cookie", {
+      cookie: authCookie.value,
     });
     console.log("[authGuard] Auth check error:", error);
     console.log("[authGuard] Auth check response:", res);

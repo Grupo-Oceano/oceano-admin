@@ -45,10 +45,7 @@ export class AxiosClass {
       return handleApiError(error);
     }
   }
-  async post<T>(
-    endpoint: string,
-    data?: Record<string, any>,
-  ): Promise<ApiResult<T>> {
+  async post<T>(endpoint: string, data?: any): Promise<ApiResult<T>> {
     try {
       const response = await this.instance.post<ApiResponse<T>>(endpoint, data);
       return [null, response.data];
