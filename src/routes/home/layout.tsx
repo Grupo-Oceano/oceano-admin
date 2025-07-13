@@ -13,13 +13,13 @@ export default component$(() => {
       <div class="col-span-2 row-span-10 content-normal">
         <Sidebar />
       </div>
-      <div class="col-span-6 row-span-2">
+      <div class="col-span-6 row-span-1">
         <Uppernav />
       </div>
       <div class={["col-span-2 row-span-2", gridSectionClass]}>
         <Logout />
       </div>
-      <div class="col-span-6 row-span-8">
+      <div class="col-span-6 row-span-9">
         <Slot />
       </div>
       <div class={["col-span-2 row-span-8", gridSectionClass]}>Logs</div>

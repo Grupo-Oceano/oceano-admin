@@ -98,7 +98,7 @@ export default component$(() => {
         form="login-form"
         class="mx-5 h-10 w-full bg-sky-600 text-white hover:bg-sky-600/80 lg:w-auto dark:bg-sky-400 dark:text-gray-900 dark:hover:bg-sky-400/80"
       >
-        <span class="material-symbols-rounded" q:slot="iconBefore">
+        <span class="material-symbol" q:slot="iconBefore">
           login
         </span>
       </ActionButton>

@@ -11,5 +11,3 @@ export default component$(() => {
     </LoginLayot>
   );
 });
-
-/* bg-gradient-to-r from-blue-500 to-purple-500 */

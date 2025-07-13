@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import { ApiGetAllResponse, ApiResponse } from "~/common/types";
 import { ErrorResponse } from "~/models/errors";
 import { handleApiError } from "./api-error";
 
@@ -11,13 +12,8 @@ const axiosInstance: AxiosInstance = axios.create({
   },
 });
 
-interface ApiResponse<T> {
-  data: T;
-  message: string;
-}
-
 // ✅ Interfaz genérica de respuesta
-type ApiResult<T> = [ErrorResponse | null, ApiResponse<T> | null];
+type ApiResult<T> = [ErrorResponse | null, T | null];
 
 export class AxiosClass {
   private instance: AxiosInstance;
@@ -32,10 +28,26 @@ export class AxiosClass {
     });
   }
 
+  async getAll<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options: AxiosRequestConfig = {},
+  ): Promise<ApiResult<ApiGetAllResponse<T>>> {
+    try {
+      const response = await this.instance.get<ApiGetAllResponse<T>>(endpoint, {
+        params,
+        ...options,
+      });
+      return [null, response.data];
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
   async get<T>(
     endpoint: string,
     params?: Record<string, any>,
-  ): Promise<ApiResult<T>> {
+  ): Promise<ApiResult<ApiResponse<T>>> {
     try {
       const response = await this.instance.get<ApiResponse<T>>(endpoint, {
         params,
@@ -45,7 +57,10 @@ export class AxiosClass {
       return handleApiError(error);
     }
   }
-  async post<T>(endpoint: string, data?: any): Promise<ApiResult<T>> {
+  async post<T>(
+    endpoint: string,
+    data?: any,
+  ): Promise<ApiResult<ApiResponse<T>>> {
     try {
       const response = await this.instance.post<ApiResponse<T>>(endpoint, data);
       return [null, response.data];
@@ -57,7 +72,7 @@ export class AxiosClass {
   async put<T>(
     endpoint: string,
     data?: Record<string, any>,
-  ): Promise<ApiResult<T>> {
+  ): Promise<ApiResult<ApiResponse<T>>> {
     try {
       const response = await this.instance.put<ApiResponse<T>>(endpoint, data);
       return [null, response.data];
@@ -66,7 +81,7 @@ export class AxiosClass {
     }
   }
 
-  async delete<T>(endpoint: string): Promise<ApiResult<T>> {
+  async delete<T>(endpoint: string): Promise<ApiResult<ApiResponse<T>>> {
     try {
       const response = await this.instance.delete<ApiResponse<T>>(endpoint);
       return [null, response.data];

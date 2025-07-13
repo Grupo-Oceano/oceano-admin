@@ -9,6 +9,10 @@
   --radius-5xl: 3rem;
 }
 
+.material-symbol {
+  @apply align-middle font-[Material_Symbols_Rounded] font-normal not-italic;
+}
+
 * {
   transition:
     background-color cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.3s,

@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { useToast } from "flowbite-qwik";
 import { gridSectionClass } from "~/common/consts";
 import { NavLink } from "./Navlink";
 
@@ -18,15 +19,17 @@ export default component$(() => {
     },
     {
       type: "item",
-      label: "Settings",
-      icon: "settings",
-      href: "/home/settings",
+      label: "Leads",
+      icon: "person_search",
+      href: "/home/leads",
     },
     { type: "item", label: "Profile", icon: "person", href: "/home/profile" },
   ];
 
+  const { add } = useToast();
+
   return (
-    <div class={["h-fill flex flex-col gap-4 border", gridSectionClass]}>
+    <div class={["h-fill flex flex-col gap-4", gridSectionClass]}>
       <a class="flex cursor-pointer flex-row content-between gap-1">
         <img
           src={`/favicon.png`}
@@ -58,9 +61,9 @@ export default component$(() => {
             <NavLink
               href={item.href!}
               activeClass="bg-gray-200 dark:bg-gray-600 text-sky-600 dark:text-sky-400"
-              class="group mb-3 flex cursor-pointer flex-row content-between gap-1 rounded-md p-2 transition-all duration-200 hover:bg-gray-200 hover:text-sky-600 hover:dark:bg-gray-600 hover:dark:text-sky-400"
+              class="group mb-3 flex cursor-pointer flex-row content-between gap-1 rounded-md p-2 font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-200 hover:text-sky-600 dark:text-gray-300 hover:dark:bg-gray-600 hover:dark:text-sky-400"
             >
-              <span class="material-symbols-rounded mr-2 self-center text-lg text-inherit">
+              <span class="material-symbol mr-2 self-center text-lg text-inherit">
                 {item.icon}
               </span>
               <span class="self-center text-lg text-inherit transition-all duration-200">
