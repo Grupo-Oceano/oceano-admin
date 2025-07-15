@@ -30,6 +30,25 @@ Inside your project, you'll see the following directory structure:
 
 - `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
 
+## Environment Variables
+
+Qwik City leverages [Vite's environment variables](https://vitejs.dev/guide/env-and-mode.html) to manage configuration. You can define variables in a `.env` file at the root of your project.
+
+### Types of Environment Variables
+
+- **Build-time (`PUBLIC_`)**: Variables prefixed with `PUBLIC_` are exposed to both the client and server.
+- **Server-side**: Variables without the `PUBLIC_` prefix are only accessible on the server.
+
+#### Example `.env` file
+
+```env
+# Public variables accessible on both client and server
+PUBLIC_API_URL=https://api.example.com
+
+# This will only be available when run on the server
+API_KEY=secretApiKeyHere
+```
+
 ## Add Integrations and deployment
 
 Use the `bun qwik add` command to add additional integrations. Some examples of integrations includes: Cloudflare, Netlify or Express Server, and the [Static Site Generator (SSG)](https://qwik.dev/qwikcity/guides/static-site-generation/).
