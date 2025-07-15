@@ -15,6 +15,8 @@ const axiosInstance: AxiosInstance = axios.create({
 // ✅ Interfaz genérica de respuesta
 type ApiResult<T> = [ErrorResponse | null, T | null];
 
+type ApiBlobResult = [ErrorResponse | null, Blob | null, string | null];
+
 export class AxiosClass {
   private instance: AxiosInstance;
 
@@ -57,6 +59,7 @@ export class AxiosClass {
       return handleApiError(error);
     }
   }
+
   async post<T>(
     endpoint: string,
     data?: any,
@@ -87,6 +90,19 @@ export class AxiosClass {
       return [null, response.data];
     } catch (error) {
       return handleApiError(error);
+    }
+  }
+
+  async download<T>(endpoint: string): Promise<ApiBlobResult> {
+    try {
+      const response = await this.instance.get<Blob>(endpoint, {
+        responseType: "blob",
+      });
+
+      console.log("Download response:", response);
+      return [null, response.data, response.headers["content-disposition"]];
+    } catch (error) {
+      return [...handleApiError(error), null];
     }
   }
 }

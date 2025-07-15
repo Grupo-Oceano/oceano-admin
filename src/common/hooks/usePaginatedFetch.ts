@@ -1,4 +1,4 @@
-import { useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, QRL, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { ClientSideAxios } from "~/lib/client-side-axios";
 
 interface Result<T> {
@@ -9,6 +9,9 @@ interface Result<T> {
     total: number;
     currentPage: number;
     pageSize: number;
+
+    onPageChange: QRL<(page: number) => void>;
+    onPageSizeChange: QRL<(size: number) => void>;
   };
 }
 
@@ -57,6 +60,14 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
       total: totalCount.value,
       currentPage: currentPage.value,
       pageSize: pageSize.value,
+
+      onPageChange: $((page: number) => {
+        currentPage.value = page;
+      }),
+      onPageSizeChange: $((size: number) => {
+        pageSize.value = size;
+        currentPage.value = 1; // Reset to first page on page size change
+      }),
     },
   };
 };

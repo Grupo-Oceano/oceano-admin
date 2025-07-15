@@ -27,6 +27,7 @@
     "@builder.io/qwik-city": "^1.14.1",
     "@eslint/js": "latest",
     "@modular-forms/qwik": "^0.29.1",
+    "@qwik-ui/headless": "^0.6.8",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "20.14.11",
     "eslint": "9.25.1",
