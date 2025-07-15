@@ -1,4 +1,4 @@
-import { $, QRL, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, QRL, useSignal, useTask$ } from "@builder.io/qwik";
 import { ClientSideAxios } from "~/lib/client-side-axios";
 
 interface Result<T> {
@@ -24,7 +24,7 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
   const pageSize = useSignal(10);
   const totalCount = useSignal(0);
 
-  useVisibleTask$(async ({ track, cleanup }) => {
+  useTask$(async ({ track, cleanup }) => {
     track(() => [currentPage.value, pageSize.value, path]);
 
     const controller = new AbortController();

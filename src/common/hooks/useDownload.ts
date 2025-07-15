@@ -2,10 +2,6 @@ import { $, useSignal } from "@builder.io/qwik";
 import { useToast } from "flowbite-qwik";
 import { ClientSideAxios } from "~/lib/client-side-axios";
 
-interface DownloadProps {
-  url: string;
-}
-
 const useDownload = (url: string) => {
   const loading = useSignal(false);
   const { add } = useToast();

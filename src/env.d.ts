@@ -1,4 +1,4 @@
-declare interface ImportMetaEnv {}
+//declare interface ImportMetaEnv {}
 
 namespace NodeJS {
   interface ProcessEnv {

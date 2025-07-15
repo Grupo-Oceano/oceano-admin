@@ -25,6 +25,7 @@ export default component$(() => {
 
   const handleSubmit: QRL<SubmitHandler<LoginForm>> = $(
     async (values, event) => {
+      event.preventDefault(); // Prevent default form submission
       const [error, res] = await Auth.login(values.username, values.password);
 
       if (error || !res) {
