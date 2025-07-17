@@ -25,6 +25,7 @@ export default component$(() => {
 
   const handleSubmit: QRL<SubmitHandler<LoginForm>> = $(
     async (values, event) => {
+      event.preventDefault(); // Prevent default form submission
       const [error, res] = await Auth.login(values.username, values.password);
 
       if (error || !res) {
@@ -45,7 +46,7 @@ export default component$(() => {
   );
 
   return (
-    <div class="flex flex-col gap-3 bg-transparent px-8 shadow-2xl backdrop-blur-lg lg:max-w-none lg:px-4 lg:shadow-none lg:backdrop-blur-none">
+    <div class="flex flex-col gap-3 bg-transparent px-8 lg:max-w-none lg:px-4">
       <div class="mb-4 flex flex-row items-center gap-2 whitespace-nowrap">
         <hr class="my-2 flex-1 border-gray-300 dark:border-gray-600" />
         <h1 class="w-auto font-bold text-sky-600 opacity-75 dark:text-sky-400">

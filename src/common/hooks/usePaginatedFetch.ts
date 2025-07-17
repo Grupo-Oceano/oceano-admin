@@ -1,5 +1,5 @@
-import { useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { ClientSideAxios } from "~/lib/client-side-axios";
+import { $, QRL, useSignal, useTask$ } from "@builder.io/qwik";
+import { apiCall } from "~/lib/axios";
 
 interface Result<T> {
   data: T[];
@@ -9,6 +9,9 @@ interface Result<T> {
     total: number;
     currentPage: number;
     pageSize: number;
+
+    onPageChange: QRL<(page: number) => void>;
+    onPageSizeChange: QRL<(size: number) => void>;
   };
 }
 
@@ -21,7 +24,7 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
   const pageSize = useSignal(10);
   const totalCount = useSignal(0);
 
-  useVisibleTask$(async ({ track, cleanup }) => {
+  useTask$(async ({ track, cleanup }) => {
     track(() => [currentPage.value, pageSize.value, path]);
 
     const controller = new AbortController();
@@ -30,7 +33,7 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
     loading.value = true;
     error.value = "";
 
-    const [errorRes, response] = await ClientSideAxios.getAll<T>(
+    const [errorRes, response] = await apiCall.getAll<T>(
       `${path}/${(currentPage.value - 1) * pageSize.value}/${pageSize.value}`,
       {},
       { signal },
@@ -57,6 +60,14 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
       total: totalCount.value,
       currentPage: currentPage.value,
       pageSize: pageSize.value,
+
+      onPageChange: $((page: number) => {
+        currentPage.value = page;
+      }),
+      onPageSizeChange: $((size: number) => {
+        pageSize.value = size;
+        currentPage.value = 1; // Reset to first page on page size change
+      }),
     },
   };
 };
