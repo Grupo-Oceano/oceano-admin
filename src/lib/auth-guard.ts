@@ -1,7 +1,7 @@
 import { RequestEvent, RequestHandler } from "@builder.io/qwik-city";
 import { Cookies } from "~/common/types";
 import { User } from "~/models/user.model";
-import { ServerSideAxios } from "./server-side-axios";
+import { apiCall } from "./axios";
 
 export const authGuard: RequestHandler = async ({
   cookie,
@@ -16,7 +16,7 @@ export const authGuard: RequestHandler = async ({
 
   // Always check if authCookie exists and is valid
   if (authCookie) {
-    const [error, res] = await ServerSideAxios.post<User>("auth/check-cookie", {
+    const [error, res] = await apiCall.post<User>("auth/check-cookie", {
       cookie: authCookie.value,
     });
     console.log("[authGuard] Auth check error:", error);

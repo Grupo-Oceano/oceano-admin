@@ -1,5 +1,5 @@
 import { $, QRL, useSignal, useTask$ } from "@builder.io/qwik";
-import { ClientSideAxios } from "~/lib/client-side-axios";
+import { apiCall } from "~/lib/axios";
 
 interface Result<T> {
   data: T[];
@@ -33,7 +33,7 @@ export const usePaginatedFetch = <T>(path: string): Result<T> => {
     loading.value = true;
     error.value = "";
 
-    const [errorRes, response] = await ClientSideAxios.getAll<T>(
+    const [errorRes, response] = await apiCall.getAll<T>(
       `${path}/${(currentPage.value - 1) * pageSize.value}/${pageSize.value}`,
       {},
       { signal },
