@@ -1,4 +1,4 @@
-import { $, component$, Slot, useSignal } from "@builder.io/qwik";
+import { $, component$, QRL, Slot, useSignal } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import clsx from "clsx";
 import Spinner from "./Spinner";
@@ -13,7 +13,6 @@ type LinkProps = {
 type ButtonProps = {
   type: "button" | "reset" | "submit";
   "preventdefault:click"?: boolean;
-  onClick$?: () => unknown;
   loading?: boolean;
   form?: string;
 };
@@ -23,14 +22,15 @@ export type DefaultButtonProps = LinkProps | ButtonProps;
 type UnstyledButtonProps = DefaultButtonProps & {
   class?: string;
   "aria-label"?: string;
+  onClick$?: QRL<() => unknown>;
 };
 
 /**
  * Basic button component that contains important functionality and is used to
  * build more complex components on top of it.
  */
-export default component$(
-  ({ class: className, ...props }: UnstyledButtonProps) => {
+export default component$<UnstyledButtonProps>(
+  ({ class: className, onClick$, ...props }) => {
     // Use loading signal
     const loading = useSignal(false);
 
@@ -53,11 +53,10 @@ export default component$(
             // disabled={loading.value || props.loading}
             // Start and stop loading if function is async
             onClick$={
-              props.onClick$ &&
+              onClick$ &&
               $(async () => {
-                console.log("Button clicked");
                 loading.value = true;
-                await props.onClick$!();
+                await onClick$();
                 loading.value = false;
               })
             }

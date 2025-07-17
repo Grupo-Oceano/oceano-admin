@@ -1,20 +1,20 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, QRL } from "@builder.io/qwik";
 import { Pagination } from "@qwik-ui/headless";
 import Icon from "./Icon";
 
 interface Props {
   selectedPage: number;
   totalPages: number;
-  onPageChange$: (page: number) => void;
+  onPageChange: QRL<(page: number) => void>;
 }
 
 export default component$<Props>(
-  ({ onPageChange$, selectedPage, totalPages }) => {
+  ({ onPageChange, selectedPage, totalPages }) => {
     return (
       <Pagination
         selectedPage={selectedPage}
         totalPages={totalPages}
-        onPageChange$={onPageChange$}
+        onPageChange$={onPageChange}
         customArrowTexts={{ previous: "", next: "" }}
         class="flex items-center gap-2"
         selectedClass="bg-blue-600 text-gray-600 px-3 py-1 rounded font-bold dark:bg-blue-700 dark:text-white"

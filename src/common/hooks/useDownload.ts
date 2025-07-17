@@ -1,10 +1,6 @@
 import { $, useSignal } from "@builder.io/qwik";
 import { useToast } from "flowbite-qwik";
-import { ClientSideAxios } from "~/lib/client-side-axios";
-
-interface DownloadProps {
-  url: string;
-}
+import { apiCall } from "~/lib/axios";
 
 const useDownload = (url: string) => {
   const loading = useSignal(false);
@@ -13,8 +9,7 @@ const useDownload = (url: string) => {
   const download = $(async () => {
     loading.value = true;
     try {
-      const [error, blob, contentDisposition] =
-        await ClientSideAxios.download(url);
+      const [error, blob, contentDisposition] = await apiCall.download(url);
 
       if (error || !blob) {
         add({

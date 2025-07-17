@@ -5,10 +5,10 @@ import { usePaginatedFetch } from "~/common/hooks/usePaginatedFetch";
 import { dateToReader } from "~/common/mask/dates";
 import Icon from "~/components/ui/Icon";
 import TablePagination from "~/components/ui/TablePagination";
-import { Lead, LeadsTableHeaders } from "~/models/leads";
+import { Guest, LeadsTableHeaders } from "~/models/leads";
 
 export default component$(() => {
-  const { data, loading, error, pagination } = usePaginatedFetch<Lead>(
+  const { data, loading, error, pagination } = usePaginatedFetch<Guest>(
     "/captive-portal/leads",
   );
 
@@ -47,6 +47,10 @@ export default component$(() => {
           <div class="flex flex-grow items-center justify-center">
             <Spinner size="9" />
           </div>
+        ) : error ? (
+          <div class="flex flex-grow items-center justify-center">
+            <p class="text-red-500">Error loading leads: {error}</p>
+          </div>
         ) : (
           <Table>
             <Table.Head>
@@ -54,8 +58,8 @@ export default component$(() => {
                 <Table.HeadCell key={header.key}>{header.label}</Table.HeadCell>
               ))}
               {/* <Table.HeadCell>
-              <span class="sr-only">Edit</span>
-            </Table.HeadCell> */}
+                <span class="sr-only">Edit</span>
+              </Table.HeadCell> */}
             </Table.Head>
             <Table.Body class="divide-y">
               {data.map((lead) => (

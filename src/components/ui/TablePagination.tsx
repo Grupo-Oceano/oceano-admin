@@ -32,7 +32,7 @@ export default component$<Props>(
         <Paginator
           selectedPage={currentPage}
           totalPages={Math.ceil(total / selectedPageSize)}
-          onPageChange$={onPageChange}
+          onPageChange={onPageChange}
         />
 
         <div class="relative">

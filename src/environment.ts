@@ -1,3 +1,5 @@
-const { API_URL } = process.env;
+import { isBrowser } from "@builder.io/qwik";
 
-export const environment = { API_URL };
+const { API_URL = "", NODE_ENV = "" } = isBrowser ? {} : process?.env || {};
+
+export const environment = { API_URL, NODE_ENV };

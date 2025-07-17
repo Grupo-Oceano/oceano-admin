@@ -1,21 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { ApiGetAllResponse, ApiResponse } from "~/common/types";
+import { environment } from "~/environment";
 import { ErrorResponse } from "~/models/errors";
 import { handleApiError } from "./api-error";
-
-// ✅ Axios instancia compartida (puedes agregar headers globales, interceptores, etc.)
-const axiosInstance: AxiosInstance = axios.create({
-  baseURL: "/webhook/api",
-  withCredentials: true, // ✅ si usas cookies (session-based auth)
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// ✅ Interfaz genérica de respuesta
-type ApiResult<T> = [ErrorResponse | null, T | null];
-
-type ApiBlobResult = [ErrorResponse | null, Blob | null, string | null];
 
 export class AxiosClass {
   private instance: AxiosInstance;
@@ -24,9 +11,6 @@ export class AxiosClass {
     this.instance = axios.create({
       baseURL,
       withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
   }
 
@@ -36,6 +20,8 @@ export class AxiosClass {
     options: AxiosRequestConfig = {},
   ): Promise<ApiResult<ApiGetAllResponse<T>>> {
     try {
+      console.log("Base URL:", this.instance.defaults.baseURL);
+      console.log("Fetching all data from:", endpoint, "with params:", params);
       const response = await this.instance.get<ApiGetAllResponse<T>>(endpoint, {
         params,
         ...options,
@@ -106,3 +92,14 @@ export class AxiosClass {
     }
   }
 }
+
+// ✅ Axios instancia compartida (puedes agregar headers globales, interceptores, etc.)
+export const apiCall: AxiosClass = new AxiosClass({
+  baseURL:
+    typeof window === "undefined" ? `${environment.API_URL}` : "/webhook/api",
+});
+
+// ✅ Interfaz genérica de respuesta
+type ApiResult<T> = [ErrorResponse | null, T | null];
+
+type ApiBlobResult = [ErrorResponse | null, Blob | null, string | null];

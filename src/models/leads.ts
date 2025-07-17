@@ -1,4 +1,4 @@
-interface Guest {
+export interface Guest {
   id: number;
   macAddress: string;
   fname: string;
@@ -7,8 +7,6 @@ interface Guest {
   createdAt: Date | string; // Assuming createdAt can be a Date or string
   updatedAt: Date | string; // Assuming updatedAt can be a Date or string
 }
-
-export interface Lead extends Guest {}
 
 export const LeadsTableHeaders = [
   { key: "id", label: "ID" },
