@@ -104,6 +104,7 @@ export default component$(() => {
               type="text"
               label="Username"
               placeholder="Username@123"
+              autoComplete="username"
               required
               labelClass="text-gray-800 dark:text-white lg:text-gray-500 lg:dark:text-gray-200"
             />
@@ -118,6 +119,7 @@ export default component$(() => {
               type="password"
               label="Password"
               placeholder="********"
+              autoComplete="current-password"
               required
               labelClass="text-gray-800 dark:text-white lg:text-gray-500 lg:dark:text-gray-200"
             />

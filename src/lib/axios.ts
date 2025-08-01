@@ -91,6 +91,10 @@ export class AxiosClass {
       return [...handleApiError(error), null];
     }
   }
+
+  getBaseURL(): string {
+    return this.instance.defaults.baseURL || "";
+  }
 }
 
 // ✅ Axios instancia compartida (puedes agregar headers globales, interceptores, etc.)

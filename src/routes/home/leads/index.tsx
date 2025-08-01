@@ -8,12 +8,11 @@ import TablePagination from "~/components/ui/TablePagination";
 import { Guest, LeadsTableHeaders } from "~/models/leads";
 
 export default component$(() => {
-  const { data, loading, error, pagination } = usePaginatedFetch<Guest>(
-    "/captive-portal/leads",
-  );
+  const { data, loading, error, pagination } =
+    usePaginatedFetch<Guest>("/guests/leads");
 
   const { loading: loadingDownload, download } = useDownload(
-    "/captive-portal/leads/download",
+    "/guests/leads/download",
   );
 
   return (

@@ -1,6 +1,7 @@
 import {
   ClassList,
   component$,
+  HTMLInputAutocompleteAttribute,
   QRL,
   useSignal,
   useTask$,
@@ -24,10 +25,11 @@ interface Props {
   error?: string;
   form?: string;
   labelClass?: ClassList;
+  autoComplete?: HTMLInputAutocompleteAttribute;
 }
 
 export default component$<Props>(({ label, value, error, ...props }) => {
-  const { name, required, labelClass } = props;
+  const { name, required, labelClass, autoComplete } = props;
   const input = useSignal<string | number>();
   useTask$(({ track }) => {
     if (!Number.isNaN(track(() => value))) {
@@ -55,6 +57,7 @@ export default component$<Props>(({ label, value, error, ...props }) => {
         )}
         id={name}
         value={input.value}
+        autoComplete={autoComplete}
         aria-invalid={!!error}
         aria-errormessage={`${name}-error`}
       />

@@ -45,6 +45,13 @@ export default defineConfig(({ command, mode }): UserConfig => {
     //       }
     //     : undefined,
     server: {
+      // Uncomment the lines below and generate certificates with mkcert for HTTPS in development
+      // ...(mode === 'development' && {
+      //   https: {
+      //     key: './localhost+2-key.pem',
+      //     cert: './localhost+2.pem',
+      //   }
+      // }),
       headers: {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",

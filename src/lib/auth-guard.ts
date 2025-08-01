@@ -16,8 +16,8 @@ export const authGuard: RequestHandler = async ({
 
   // Always check if authCookie exists and is valid
   if (authCookie) {
-    const [error, res] = await apiCall.post<User>("auth/check-cookie", {
-      cookie: authCookie.value,
+    const [error, res] = await apiCall.post<User>("auth/check-token", {
+      token: authCookie.value,
     });
     console.log("[authGuard] Auth check error:", error);
     console.log("[authGuard] Auth check response:", res);
