@@ -18,10 +18,18 @@ export default component$(() => {
     },
     {
       type: "item",
+      label: "Infra",
+      icon: "settings",
+      href: "/home/infrastructure",
+    },
+    { type: "separator", label: "Data" },
+    {
+      type: "item",
       label: "Leads",
       icon: "person_search",
       href: "/home/leads",
     },
+    { type: "separator", label: "" },
     { type: "item", label: "Profile", icon: "person", href: "/home/profile" },
   ];
 
