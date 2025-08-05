@@ -1,97 +1,174 @@
-# Qwik City App ⚡️
+# Oceano Admin - Infrastructure Module
 
-- [Qwik Docs](https://qwik.dev/)
-- [Discord](https://qwik.dev/chat)
-- [Qwik GitHub](https://github.com/QwikDev/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
+## Overview
 
----
+This module provides comprehensive infrastructure management capabilities for the Oceano platform, following a scalable and maintainable architecture pattern.
 
-## Project Structure
-
-This project is using Qwik with [QwikCity](https://qwik.dev/qwikcity/overview/). QwikCity is just an extra set of tools on top of Qwik to make it easier to build a full site, including directory-based routing, layouts, and more.
-
-Inside your project, you'll see the following directory structure:
+## Folder Structure
 
 ```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
+src/
+├── components/
+│   ├── business/
+│   │   └── infrastructure/           # Infrastructure-specific components
+│   │       ├── MetricsCard.tsx       # Reusable metrics display card
+│   │       ├── ServiceTable.tsx      # Service management table
+│   │       ├── SystemOverview.tsx    # System metrics overview
+│   │       ├── QuickActions.tsx      # Quick action buttons
+│   │       ├── RecentEvents.tsx      # Recent events panel
+│   │       ├── SystemHealth.tsx      # System health indicators
+│   │       └── index.ts              # Barrel exports
+│   └── common/
+│       └── ui/                       # Shared UI components
+├── lib/
+│   ├── hooks/
+│   │   └── useInfrastructure.ts      # Infrastructure data management hook
+│   ├── stores/
+│   │   └── infrastructure.store.ts   # Global infrastructure state
+│   └── utils/
+│       ├── format.ts                 # Formatting utilities
+│       └── constants.ts              # Application constants
+├── services/
+│   └── infrastructure/
+│       └── InfrastructureService.ts  # Infrastructure business logic
+└── routes/
+    └── home/
+        └── infrastructure/
+            └── index.tsx             # Main infrastructure page
 ```
 
-- `src/routes`: Provides the directory-based routing, which can include a hierarchy of `layout.tsx` layout files, and an `index.tsx` file as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.dev/qwikcity/routing/overview/) for more info.
+## Architecture Principles
 
-- `src/components`: Recommended directory for components.
+### 1. **Separation of Concerns**
 
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
+- **Components**: Pure UI components with minimal business logic
+- **Services**: Business logic and API communication
+- **Hooks**: State management and component logic
+- **Utils**: Reusable utility functions
 
-## Environment Variables
+### 2. **Component Hierarchy**
 
-Qwik City leverages [Vite's environment variables](https://vitejs.dev/guide/env-and-mode.html) to manage configuration. You can define variables in a `.env` file at the root of your project.
+- **Common Components**: Shared across the entire application
+- **Business Components**: Domain-specific (infrastructure, sales, etc.)
+- **Feature Components**: Grouped by specific features
 
-### Types of Environment Variables
-
-- **Build-time (`PUBLIC_`)**: Variables prefixed with `PUBLIC_` are exposed to both the client and server.
-- **Server-side**: Variables without the `PUBLIC_` prefix are only accessible on the server.
-
-#### Example `.env` file
-
-```env
-# Public variables accessible on both client and server
-PUBLIC_API_URL=https://api.example.com
-
-# This will only be available when run on the server
-API_KEY=secretApiKeyHere
-```
-
-## Add Integrations and deployment
-
-Use the `bun qwik add` command to add additional integrations. Some examples of integrations includes: Cloudflare, Netlify or Express Server, and the [Static Site Generator (SSG)](https://qwik.dev/qwikcity/guides/static-site-generation/).
-
-```shell
-bun qwik add # or `bun qwik add`
-```
-
-## Development
-
-Development mode uses [Vite's development server](https://vitejs.dev/). The `dev` command will server-side render (SSR) the output during development.
-
-```shell
-npm start # or `bun start`
-```
-
-> Note: during dev mode, Vite may request a significant number of `.js` files. This does not represent a Qwik production build.
-
-## Preview
-
-The preview command will create a production build of the client modules, a production build of `src/entry.preview.tsx`, and run a local server. The preview server is only for convenience to preview a production build locally and should not be used as a production server.
-
-```shell
-bun preview # or `bun preview`
-```
-
-## Production
-
-The production build will generate client and server modules by running both client and server build commands. The build command will use Typescript to run a type check on the source code.
-
-```shell
-bun build # or `bun build`
-```
-
-## Node Server
-
-This app has a minimal zero-dependencies server. Using the built-in `http.createServer` API.
-This should be faster and less overhead than Express or other frameworks.
-
-After running a full build, you can preview the build using the command:
+### 3. **Data Flow**
 
 ```
-npm run serve
+Service Layer → Hook → Component
+     ↓           ↓        ↓
+   API Calls   State    Render
 ```
 
-Then visit [http://localhost:3004/](http://localhost:3004/)
+## Usage Examples
+
+### Using Infrastructure Components
+
+```tsx
+import {
+  SystemOverview,
+  ServiceTable,
+} from "~/components/business/infrastructure";
+import { useInfrastructure } from "~/lib/hooks/useInfrastructure";
+
+export default component$(() => {
+  const { services, metrics, refresh } = useInfrastructure();
+
+  return (
+    <div>
+      <SystemOverview metrics={metrics} />
+      <ServiceTable services={services} onServiceAction={handleAction} />
+    </div>
+  );
+});
+```
+
+### Using Utilities
+
+```tsx
+import { formatBytes, formatUptime } from "~/lib/utils/format";
+import { SERVICE_STATUS, STATUS_COLORS } from "~/lib/utils/constants";
+
+const memoryUsage = formatBytes(service.memory * 1024 * 1024);
+const uptime = formatUptime(service.uptimeSeconds);
+```
+
+## Benefits of This Structure
+
+### 🎯 **Maintainability**
+
+- Clear separation of concerns
+- Easy to locate and modify specific functionality
+- Consistent naming conventions
+
+### 🔧 **Reusability**
+
+- Components can be easily reused across different pages
+- Utility functions shared across modules
+- Service layer abstracts API complexity
+
+### 📈 **Scalability**
+
+- Easy to add new modules following the same pattern
+- Components can be extended without affecting others
+- Clear dependencies between layers
+
+### 🧪 **Testability**
+
+- Each layer can be tested independently
+- Mock services for component testing
+- Utility functions are pure and easily testable
+
+### 👥 **Team Collaboration**
+
+- Clear folder structure makes it easy for team members to find code
+- Consistent patterns reduce learning curve
+- Barrel exports simplify imports
+
+## Adding New Features
+
+### 1. **New Component**
+
+```bash
+# Create component
+touch src/components/business/infrastructure/NewComponent.tsx
+
+# Add to barrel export
+echo 'export { default as NewComponent } from "./NewComponent";' >> src/components/business/infrastructure/index.ts
+```
+
+### 2. **New Service Method**
+
+```tsx
+// Add to InfrastructureService.ts
+async newServiceMethod(): Promise<SomeType> {
+  // Implementation
+}
+```
+
+### 3. **New Hook**
+
+```tsx
+// Create in src/lib/hooks/
+export function useNewFeature() {
+  // Hook implementation
+}
+```
+
+## Best Practices
+
+1. **Keep components pure**: Minimize side effects in components
+2. **Use TypeScript**: Leverage strong typing for better development experience
+3. **Follow naming conventions**: Use descriptive names that indicate purpose
+4. **Document complex logic**: Add comments for business logic and algorithms
+5. **Test at the right level**: Unit test utilities, integration test hooks, e2e test pages
+
+## Migration Guide
+
+When refactoring existing code to this structure:
+
+1. **Extract components**: Move large components into smaller, focused ones
+2. **Create services**: Move API calls and business logic to service classes
+3. **Use hooks**: Replace direct state management with custom hooks
+4. **Add utilities**: Extract common functions to utility modules
+5. **Update imports**: Use barrel exports for cleaner import statements

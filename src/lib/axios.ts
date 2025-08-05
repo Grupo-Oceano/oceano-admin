@@ -1,8 +1,11 @@
+import { isBrowser } from "@builder.io/qwik";
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { ApiGetAllResponse, ApiResponse } from "~/common/types";
 import { environment } from "~/environment";
 import { ErrorResponse } from "~/models/errors";
 import { handleApiError } from "./api-error";
+
+export type Methods = keyof Pick<AxiosClass, "get" | "post" | "put" | "delete">;
 
 export class AxiosClass {
   private instance: AxiosInstance;
@@ -99,8 +102,7 @@ export class AxiosClass {
 
 // ✅ Axios instancia compartida (puedes agregar headers globales, interceptores, etc.)
 export const apiCall: AxiosClass = new AxiosClass({
-  baseURL:
-    typeof window === "undefined" ? `${environment.API_URL}` : "/webhook/api",
+  baseURL: isBrowser ? "/webhook/api" : `${environment.API_URL}`,
 });
 
 // ✅ Interfaz genérica de respuesta

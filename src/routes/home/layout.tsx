@@ -1,10 +1,7 @@
 import { component$, Slot, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { gridSectionClass } from "~/common/consts";
-import Sidebar from "~/components/system/Sidebar";
-import Uppernav from "~/components/system/Uppernav";
-import { authGuard } from "~/lib/auth-guard";
-
-export const onRequest = authGuard;
+import Sidebar from "~/components/etc/system/Sidebar";
+import Uppernav from "~/components/etc/system/Uppernav";
 
 export default component$(() => {
   const someServiceDown = useSignal(false);
@@ -25,11 +22,11 @@ export default component$(() => {
         <Uppernav />
       </div>
       <div class={["col-span-2 row-span-3", gridSectionClass]}>
-        <div class="h-fill flex flex-col" title="This is mocked data">
+        <div class="h-fill flex flex-col px-2" title="This is mocked data">
           <h3 class="mb-3 text-lg font-semibold text-gray-700 lg:text-2xl dark:text-white">
             System Status
           </h3>
-          <div class="flex flex-grow flex-col justify-between">
+          <div class="flex flex-grow flex-col justify-between px-2">
             <div class="space-y-2">
               <div class="flex items-center gap-2">
                 <div class="h-3 w-3 rounded-full bg-green-500"></div>

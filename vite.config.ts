@@ -59,7 +59,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
       proxy: {
         "/webhook/api": {
           target: process.env.API_URL,
-          rewrite: (path) => path.replace(/^\/webhook\/api/, "/"),
+          rewrite: (path) => path.replace(/^\/webhook\/api/, ""),
           changeOrigin: true,
           secure: false, // Set to true if using HTTPS
         },
