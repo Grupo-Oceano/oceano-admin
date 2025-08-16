@@ -9,7 +9,7 @@ export interface ApiGetAllResponse<T> {
   message: string;
 }
 
-export type ApiResponse<T, U = never> = {
+export type ApiResponse<T, U = object> = {
   data: T;
   message: string;
 } & U;

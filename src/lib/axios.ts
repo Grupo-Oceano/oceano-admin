@@ -29,58 +29,73 @@ export class AxiosClass {
       });
       return [null, response.data];
     } catch (error) {
-      return handleApiError(error);
+      const _ = handleApiError(error);
+      return [_, null];
     }
   }
 
-  async get<T, U = never>(
+  async get<T, U = object>(
     endpoint: string,
     params?: Record<string, any>,
+    config?: AxiosRequestConfig,
   ): Promise<ApiResult<ApiResponse<T, U>>> {
     try {
       const response = await this.instance.get<ApiResponse<T, U>>(endpoint, {
         params,
+        ...config,
       });
       return [null, response.data];
     } catch (error) {
-      return handleApiError(error);
+      const _ = handleApiError<ApiResponse<T>>(error);
+      return [_, null];
     }
   }
 
-  async post<T>(
+  async post<T, U = object>(
     endpoint: string,
     data?: any,
-  ): Promise<ApiResult<ApiResponse<T>>> {
+  ): Promise<ApiResult<ApiResponse<T, U>>> {
     try {
-      const response = await this.instance.post<ApiResponse<T>>(endpoint, data);
+      const response = await this.instance.post<ApiResponse<T, U>>(
+        endpoint,
+        data,
+      );
       return [null, response.data];
     } catch (error) {
-      return handleApiError(error);
+      const _ = handleApiError<ApiResponse<T, U>>(error);
+      return [_, null];
     }
   }
 
-  async put<T>(
+  async put<T, U = object>(
     endpoint: string,
     data?: Record<string, any>,
-  ): Promise<ApiResult<ApiResponse<T>>> {
+  ): Promise<ApiResult<ApiResponse<T, U>>> {
     try {
-      const response = await this.instance.put<ApiResponse<T>>(endpoint, data);
+      const response = await this.instance.put<ApiResponse<T, U>>(
+        endpoint,
+        data,
+      );
       return [null, response.data];
     } catch (error) {
-      return handleApiError(error);
+      const _ = handleApiError<ApiResponse<T, U>>(error);
+      return [_, null];
     }
   }
 
-  async delete<T>(endpoint: string): Promise<ApiResult<ApiResponse<T>>> {
+  async delete<T, U = object>(
+    endpoint: string,
+  ): Promise<ApiResult<ApiResponse<T, U>>> {
     try {
-      const response = await this.instance.delete<ApiResponse<T>>(endpoint);
+      const response = await this.instance.delete<ApiResponse<T, U>>(endpoint);
       return [null, response.data];
     } catch (error) {
-      return handleApiError(error);
+      const _ = handleApiError<ApiResponse<T, U>>(error);
+      return [_, null];
     }
   }
 
-  async download<T>(endpoint: string): Promise<ApiBlobResult> {
+  async download<T, U = object>(endpoint: string): Promise<ApiBlobResult> {
     try {
       const response = await this.instance.get<Blob>(endpoint, {
         responseType: "blob",
@@ -89,7 +104,8 @@ export class AxiosClass {
       console.log("Download response:", response);
       return [null, response.data, response.headers["content-disposition"]];
     } catch (error) {
-      return [...handleApiError(error), null];
+      const _ = handleApiError<ApiResponse<T, U>>(error);
+      return [_, null, null];
     }
   }
 

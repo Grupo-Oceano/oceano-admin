@@ -33,9 +33,7 @@ export const useSeamDevicesList = () => {
     const [errRes, response] = await apiCall.get<
       SeamDevice[],
       { pagination: SeamPagination }
-    >(`/api/iot/devices`, {
-      signal,
-    });
+    >(`/api/iot/devices`, {}, { signal });
 
     if (errRes) {
       store.error = errRes.message || "Unknown error";

@@ -15,7 +15,7 @@ export const useApi = <T>(path: string, method: Methods): HookResult<T> => {
   });
 
   useTask$(async ({ track, cleanup }) => {
-    track(() => path);
+    track(() => [path, method]);
     result.loading = true;
     result.error = "";
     result.data = null;
