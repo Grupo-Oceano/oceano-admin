@@ -11,7 +11,7 @@ export default component$(() => {
             Internet of Things Management
           </h1>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Monitor and manage your Oceano IoT devices for Oceano Rentals
+            Monitor and manage Oceano IoT devices for Oceano Rentals
           </p>
         </div>
       </div>

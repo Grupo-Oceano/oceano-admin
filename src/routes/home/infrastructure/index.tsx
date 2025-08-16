@@ -63,7 +63,7 @@ export default component$(() => {
             Infrastructure Management
           </h1>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Monitor and manage your Oceano infrastructure services
+            Monitor and manage Oceano infrastructure services
           </p>
         </div>
         <div class="flex gap-3">
