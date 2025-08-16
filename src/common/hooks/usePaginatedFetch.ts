@@ -1,18 +1,20 @@
 import { $, QRL, useSignal, useTask$ } from "@builder.io/qwik";
 import { apiCall } from "~/lib/axios";
 
+export interface Pagination {
+  total: number;
+  currentPage: number;
+  pageSize: number;
+
+  onPageChange: QRL<(page: number) => void>;
+  onPageSizeChange: QRL<(size: number) => void>;
+}
+
 interface Result<T> {
   data: T[];
   loading: boolean;
   error: string;
-  pagination: {
-    total: number;
-    currentPage: number;
-    pageSize: number;
-
-    onPageChange: QRL<(page: number) => void>;
-    onPageSizeChange: QRL<(size: number) => void>;
-  };
+  pagination: Pagination;
 }
 
 export const usePaginatedFetch = <T>(path: string): Result<T> => {

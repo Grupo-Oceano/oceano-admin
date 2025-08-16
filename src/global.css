@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "./flowbite.css";
-@source inline("bg-[url(/assets/bg1.jpg)]");
-@source inline("bg-[url(/assets/bg2.jpg)]");
-@source inline("bg-[url(/assets/bg3.jpg)]");
+@source inline("bg-[url(/assets/images/bg1.jpg)]");
+@source inline("bg-[url(/assets/images/bg2.jpg)]");
+@source inline("bg-[url(/assets/images/bg3.jpg)]");
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -14,10 +14,7 @@
 }
 
 * {
-  transition:
-    background-color cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.3s,
-    color cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.3s;
-
+  transition: background-color cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.3s;
   @apply font-sans;
 }
 

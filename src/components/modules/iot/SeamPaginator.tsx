@@ -1,19 +1,20 @@
-import { component$, QRL } from "@builder.io/qwik";
+// Since seam handles pagination way different, we need to implement a custom paginator
+
+import { $, component$ } from "@builder.io/qwik";
 import { Pagination } from "@qwik-ui/headless";
-import Icon from "./Icon";
+import Icon from "~/components/etc/ui/Icon";
 
-interface Props {
-  selectedPage: number;
-  totalPages: number;
-  onPageChange: QRL<(page: number) => void>;
-}
+interface Props {}
 
-export default component$<Props>(
-  ({ onPageChange, selectedPage, totalPages }) => {
-    return (
+export default component$<Props>(() => {
+  const onPageChange = $((page: number) => {
+    // Handle page change
+  });
+  return (
+    <div>
       <Pagination
-        selectedPage={selectedPage}
-        totalPages={totalPages}
+        selectedPage={4}
+        totalPages={10}
         onPageChange$={onPageChange}
         customArrowTexts={{ previous: "", next: "" }}
         class="flex items-center gap-2"
@@ -26,6 +27,6 @@ export default component$<Props>(
         <Icon q:slot="prefix" icon="keyboard_double_arrow_left" />
         <Icon q:slot="suffix" icon="keyboard_double_arrow_right" />
       </Pagination>
-    );
-  },
-);
+    </div>
+  );
+});

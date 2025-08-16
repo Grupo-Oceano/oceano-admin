@@ -9,10 +9,10 @@ This module provides comprehensive infrastructure management capabilities for th
 ```
 src/
 ├── components/
-│   ├── business/
+│   ├── modules/
 │   │   └── infrastructure/           # Infrastructure-specific components
 │   │       ├── MetricsCard.tsx       # Reusable metrics display card
-│   │       ├── ServiceTable.tsx      # Service management table
+│   │       ├── ServicesTable.tsx      # Service management table
 │   │       ├── SystemOverview.tsx    # System metrics overview
 │   │       ├── QuickActions.tsx      # Quick action buttons
 │   │       ├── RecentEvents.tsx      # Recent events panel
@@ -67,8 +67,8 @@ Service Layer → Hook → Component
 ```tsx
 import {
   SystemOverview,
-  ServiceTable,
-} from "~/components/business/infrastructure";
+  ServicesTable,
+} from "~/components/modules/infrastructure";
 import { useInfrastructure } from "~/lib/hooks/useInfrastructure";
 
 export default component$(() => {
@@ -77,7 +77,7 @@ export default component$(() => {
   return (
     <div>
       <SystemOverview metrics={metrics} />
-      <ServiceTable services={services} onServiceAction={handleAction} />
+      <ServicesTable services={services} onServiceAction={handleAction} />
     </div>
   );
 });
@@ -131,10 +131,10 @@ const uptime = formatUptime(service.uptimeSeconds);
 
 ```bash
 # Create component
-touch src/components/business/infrastructure/NewComponent.tsx
+touch src/components/modules/infrastructure/NewComponent.tsx
 
 # Add to barrel export
-echo 'export { default as NewComponent } from "./NewComponent";' >> src/components/business/infrastructure/index.ts
+echo 'export { default as NewComponent } from "./NewComponent";' >> src/components/modules/infrastructure/index.ts
 ```
 
 ### 2. **New Service Method**

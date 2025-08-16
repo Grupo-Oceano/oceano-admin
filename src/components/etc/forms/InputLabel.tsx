@@ -21,7 +21,7 @@ export default component$<Props>(
           )}
           for={name}
         >
-          {label}{" "}
+          {label}
           {required && (
             <span class="ml-1 text-red-600 dark:text-red-400">*</span>
           )}

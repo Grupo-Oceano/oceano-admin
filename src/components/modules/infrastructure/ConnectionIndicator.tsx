@@ -1,12 +1,12 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, QRL } from "@builder.io/qwik";
 import type { ConnectionStatus } from "~/lib/stores/infrastructure.store";
 
 interface ConnectionIndicatorProps {
   status: ConnectionStatus;
   lastUpdate: Date | null;
   reconnectAttempts: number;
-  onReconnect?: () => void;
-  onDisconnect?: () => void;
+  onReconnect?: QRL<() => void>;
+  onDisconnect?: QRL<() => void>;
 }
 
 export default component$<ConnectionIndicatorProps>(
@@ -78,12 +78,12 @@ export default component$<ConnectionIndicatorProps>(
         </div>
 
         {lastUpdate && status === "connected" && (
-          <span class="text-xs text-gray-500">
+          <span class="text-xs text-gray-500 dark:text-gray-300">
             Last update: {lastUpdate.toLocaleTimeString()}
           </span>
         )}
 
-        {config.showActions && (
+        {/*  {config.showActions && (
           <div class="ml-auto flex gap-2">
             {status === "disconnected" || status === "error" ? (
               <button
@@ -101,7 +101,7 @@ export default component$<ConnectionIndicatorProps>(
               </button>
             ) : null}
           </div>
-        )}
+        )} */}
       </div>
     );
   },

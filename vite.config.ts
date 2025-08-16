@@ -77,6 +77,10 @@ export default defineConfig(({ command, mode }): UserConfig => {
             });
           },
         },
+        "/socket.io": {
+          target: process.env.API_URL,
+          ws: true,
+        },
       },
     },
     preview: {

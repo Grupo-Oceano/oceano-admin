@@ -4,10 +4,15 @@ import {
   Slot,
   useContextProvider,
   useStore,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { contexts } from "~/common/consts";
-import { useWebSockets } from "~/common/hooks/useWebSockets";
-import type { ServiceStatus, SystemMetrics } from "~/models/infra.model";
+import {
+  useWebSocket,
+  WSEvent,
+  WSNamespace,
+} from "~/common/hooks/useWebSockets";
+import type { MetricsInfo, ServicesStatus } from "~/models/infra.model";
 
 export type ConnectionStatus =
   | "connecting"
@@ -17,15 +22,9 @@ export type ConnectionStatus =
   | "error";
 
 export interface InfrastructureStore {
-  services: ServiceStatus[];
-  metrics: SystemMetrics;
-  loading: boolean; // Initial data loading only
+  services: ServicesStatus | null;
+  metrics: MetricsInfo | null;
   lastUpdate: Date | null; // When data was last received via WebSocket
-  error: string | null;
-  // WebSocket specific states
-  connectionStatus: ConnectionStatus;
-  reconnectAttempts: number;
-  isRealtimeEnabled: boolean;
 }
 
 export const InfrastructureContext = createContextId<InfrastructureStore>(
@@ -33,28 +32,32 @@ export const InfrastructureContext = createContextId<InfrastructureStore>(
 );
 
 export const initialInfrastructureState: InfrastructureStore = {
-  services: [],
-  metrics: {
-    totalMemory: 0,
-    usedMemory: 0,
-    cpuUsage: 0,
-    diskUsage: 0,
-    activeServices: 0,
-    totalServices: 0,
-  },
-  loading: true, // Only for initial connection/data load
+  services: null,
+  metrics: null,
   lastUpdate: null,
-  error: null,
-  // WebSocket specific initial states
-  connectionStatus: "connecting",
-  reconnectAttempts: 0,
-  isRealtimeEnabled: true,
 };
 
 export const InfrastructureContextProvider = component$(() => {
   const infra = useStore<InfrastructureStore>(initialInfrastructureState);
+  const { listen$, send$ } = useWebSocket(WSNamespace.OCEANO_INFRA);
 
-  useWebSockets()
+  useVisibleTask$(() => {
+    const handleServiceStatus = (data: ServicesStatus) => {
+      infra.services = data;
+      infra.lastUpdate = new Date();
+    };
+
+  const handleMetricsUpdate = (data: MetricsInfo) => {
+    infra.metrics = data;
+    infra.lastUpdate = new Date();
+  };
+
+  send$(WSEvent.SERVICE_STATUS);
+  listen$(WSEvent.SERVICE_STATUS, handleServiceStatus);
+
+  send$(WSEvent.METRICS_UPDATE);
+  listen$(WSEvent.METRICS_UPDATE, handleMetricsUpdate);
+  });
 
   useContextProvider(InfrastructureContext, infra);
 

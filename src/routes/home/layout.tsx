@@ -36,7 +36,7 @@ export default component$(() => {
               </div>
               <div class="flex items-center gap-2">
                 <div class="h-3 w-3 rounded-full bg-blue-500"></div>
-                <small class="dark:text-gray-3 text-sm text-gray-800 lg:text-base">
+                <small class="text-sm text-gray-800 lg:text-base dark:text-gray-300">
                   Availability: 99.99%
                 </small>
               </div>
@@ -44,7 +44,7 @@ export default component$(() => {
               {someServiceDown.value && (
                 <div class="animate-slide-up flex items-center gap-2">
                   <div class="h-3 w-3 rounded-full bg-yellow-500"></div>
-                  <small class="dark:text-gray-3 text-sm text-gray-800 lg:text-base">
+                  <small class="text-sm text-gray-800 lg:text-base dark:text-gray-300">
                     Some services are down
                   </small>
                 </div>
@@ -60,7 +60,7 @@ export default component$(() => {
       <div class="col-span-6 row-span-9 overflow-auto">
         <Slot />
       </div>
-      <div class={["col-span-2 row-span-8", gridSectionClass]}>Logs</div>
+      <div class={["col-span-2 row-span-7", gridSectionClass]}>Logs</div>
     </div>
   );
 });

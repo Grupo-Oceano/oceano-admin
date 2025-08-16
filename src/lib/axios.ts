@@ -23,8 +23,6 @@ export class AxiosClass {
     options: AxiosRequestConfig = {},
   ): Promise<ApiResult<ApiGetAllResponse<T>>> {
     try {
-      console.log("Base URL:", this.instance.defaults.baseURL);
-      console.log("Fetching all data from:", endpoint, "with params:", params);
       const response = await this.instance.get<ApiGetAllResponse<T>>(endpoint, {
         params,
         ...options,
@@ -35,12 +33,12 @@ export class AxiosClass {
     }
   }
 
-  async get<T>(
+  async get<T, U = never>(
     endpoint: string,
     params?: Record<string, any>,
-  ): Promise<ApiResult<ApiResponse<T>>> {
+  ): Promise<ApiResult<ApiResponse<T, U>>> {
     try {
-      const response = await this.instance.get<ApiResponse<T>>(endpoint, {
+      const response = await this.instance.get<ApiResponse<T, U>>(endpoint, {
         params,
       });
       return [null, response.data];

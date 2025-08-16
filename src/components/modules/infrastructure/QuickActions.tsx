@@ -1,16 +1,16 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, QRL } from "@builder.io/qwik";
 
 interface QuickAction {
   icon: string;
   label: string;
-  action: () => void;
+  action: QRL<() => void>;
 }
 
 interface QuickActionsProps {
-  onRestartAll: () => void;
-  onViewMetrics: () => void;
-  onMaintenance: () => void;
-  onExportLogs: () => void;
+  onRestartAll: QRL<() => void>;
+  onViewMetrics: QRL<() => void>;
+  onMaintenance: QRL<() => void>;
+  onExportLogs: QRL<() => void>;
 }
 
 export default component$<QuickActionsProps>(
@@ -48,7 +48,7 @@ export default component$<QuickActionsProps>(
             <button
               key={index}
               onClick$={action.action}
-              class="w-full rounded bg-gray-100 px-3 py-2 text-left text-sm hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+              class="w-full cursor-pointer rounded bg-gray-100 px-3 py-2 text-left text-sm hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600"
             >
               {action.icon} {action.label}
             </button>

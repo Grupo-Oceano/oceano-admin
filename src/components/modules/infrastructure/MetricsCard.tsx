@@ -4,10 +4,10 @@ interface MetricsCardProps {
   title: string;
   value: string | number;
   icon: string;
-  color: string;
   progress?: number;
   subtitle?: string;
   progressColor?: string;
+  className?: string;
 }
 
 export default component$<MetricsCardProps>(
@@ -15,13 +15,18 @@ export default component$<MetricsCardProps>(
     title,
     value,
     icon,
-    color,
     progress,
     subtitle,
     progressColor = "bg-blue-600",
+    className,
   }) => {
     return (
-      <div class="hover:-translate-0.5 rounded-lg bg-white p-6 shadow-lg transition-all duration-200 hover:shadow-xl dark:bg-gray-800">
+      <div
+        class={[
+          "rounded-lg bg-white p-6 shadow-lg transition-all duration-200 hover:-translate-0.5 hover:shadow-xl dark:bg-gray-800",
+          className,
+        ]}
+      >
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600 dark:text-gray-400">{title}</p>
@@ -32,7 +37,7 @@ export default component$<MetricsCardProps>(
           <div class="text-2xl">{icon}</div>
         </div>
         {progress !== undefined && (
-          <div class="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+          <div class="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-800">
             <div
               class={`h-2 rounded-full ${progressColor}`}
               style={`width: ${progress}%`}

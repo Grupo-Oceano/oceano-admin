@@ -1,19 +1,20 @@
-export interface ServiceStatus {
-  id: string;
-  name: string;
-  status: "running" | "stopped" | "error" | "warning";
-  uptime: string;
-  cpu: number;
-  memory: number;
-  ports: string[];
-  lastUpdated: string;
+import { ContainerInfo, ContainerStats } from "dockerode";
+
+export interface DockerContainerWithStats extends ContainerInfo {
+  stats: ContainerStats;
 }
 
-export interface SystemMetrics {
-  totalMemory: number;
-  usedMemory: number;
-  cpuUsage: number;
-  diskUsage: number;
+export type ServicesStatus = DockerContainerWithStats[];
+
+export interface MetricsInfo {
   activeServices: number;
   totalServices: number;
+  cpuUsage: string;
+  totalMemory: string;
+  usedMemory: string;
+  freeMemory: string;
+  diskUsage: {
+    read: string;
+    write: string;
+  };
 }

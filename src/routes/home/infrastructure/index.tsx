@@ -2,36 +2,48 @@ import { $, component$, useContext } from "@builder.io/qwik";
 import {
   QuickActions,
   RecentEvents,
-  ServiceTable,
+  ServicesTable,
   SystemHealth,
   SystemOverview,
-} from "~/components/business/infrastructure";
-import ConnectionIndicator from "~/components/business/infrastructure/ConnectionIndicator";
+} from "~/components/modules/infrastructure";
+import ConnectionIndicator from "~/components/modules/infrastructure/ConnectionIndicator";
 import { InfrastructureContext } from "~/lib/stores/infrastructure.store";
 
 export default component$(() => {
-  const {
-    services,
-    metrics,
-    loading,
-    lastUpdate,
-    error,
+  const { services, metrics, lastUpdate } = useContext(InfrastructureContext);
 
-    // WebSocket connection states
-    isRealtimeEnabled,
-    connectionStatus,
-    reconnectAttempts,
-  } = useContext(InfrastructureContext);
-
-  const handleQuickAction = $(async (action: string) => {
-    console.log(`Quick action: ${action}`);
-    // Implement quick actions via WebSocket
-    // Example: sendServiceAction("all", action);
+  const handleRestartAll = $(async () => {
+    console.log(`Quick action: restart-all`);
+    // Implement restart all services via WebSocket
+    // Example: sendServiceAction("all", "restart");
   });
 
-  if (loading) {
+  const handleViewMetrics = $(async () => {
+    console.log(`Quick action: view-metrics`);
+    // Implement view metrics action
+    // Example: navigate to metrics page or open modal
+  });
+
+  const handleMaintenance = $(async () => {
+    console.log(`Quick action: maintenance`);
+    // Implement maintenance mode toggle
+    // Example: sendServiceAction("all", "maintenance");
+  });
+
+  const handleExportLogs = $(async () => {
+    console.log(`Quick action: export-logs`);
+    // Implement logs export functionality
+    // Example: downloadLogs();
+  });
+
+  const onServiceAction$ = $((serviceId: string, action: string) => {
+    console.log({ serviceId, action });
+  });
+
+  /* if (loading) {
     return (
       <div class="h-fill flex items-center justify-center p-6">
+        <Skeleton classes="h-32" />
         <div class="flex flex-col items-center gap-4">
           <div class="mb-4 h-24 w-24 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
           <p class="text-gray-600 dark:text-gray-400">
@@ -41,9 +53,9 @@ export default component$(() => {
       </div>
     );
   }
-
+ */
   return (
-    <div class="min-h-screen p-6">
+    <div class="min-h-screen p-6 pt-0">
       {/* Header */}
       <div class="mb-6 flex items-center justify-between">
         <div>
@@ -56,17 +68,20 @@ export default component$(() => {
         </div>
         <div class="flex gap-3">
           <ConnectionIndicator
-            status={connectionStatus}
+            status={"connected"}
             lastUpdate={lastUpdate}
-            reconnectAttempts={reconnectAttempts}
-            onReconnect={() => {}}
-            onDisconnect={() => {}}
+            reconnectAttempts={0}
+            /* onReconnect={() => {}}
+            onDisconnect={() => {}} */
           />
         </div>
       </div>
 
+      {/* System Overview Cards */}
+      <SystemOverview metrics={metrics} />
+
       {/* Error Display */}
-      {error && (
+      {/* {error && (
         <div class="mb-6 rounded-lg border border-red-300 bg-red-100 p-4 dark:border-red-700 dark:bg-red-900">
           <div class="flex items-center gap-2">
             <span class="text-red-500">🔴</span>
@@ -76,23 +91,20 @@ export default component$(() => {
             <span class="text-red-600 dark:text-red-400">{error}</span>
           </div>
         </div>
-      )}
-
-      {/* System Overview Cards */}
-      <SystemOverview metrics={metrics} />
+      )} */}
 
       {/* Services Table */}
-      <ServiceTable services={services} onServiceAction={() => {}} />
+      <ServicesTable services={services} onServiceAction={onServiceAction$} />
 
       {/* Quick Stats Footer */}
       <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         <RecentEvents />
         <SystemHealth />
         <QuickActions
-          onRestartAll={() => handleQuickAction("restart-all")}
-          onViewMetrics={() => handleQuickAction("view-metrics")}
-          onMaintenance={() => handleQuickAction("maintenance")}
-          onExportLogs={() => handleQuickAction("export-logs")}
+          onRestartAll={handleRestartAll}
+          onViewMetrics={handleViewMetrics}
+          onMaintenance={handleMaintenance}
+          onExportLogs={handleExportLogs}
         />
       </div>
     </div>

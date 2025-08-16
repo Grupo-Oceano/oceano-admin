@@ -23,7 +23,12 @@ export default component$(() => {
       icon: "lan",
       href: "/home/infrastructure",
     },
-    { type: "separator", label: "Data" },
+    {
+      type: "item",
+      label: "IoT",
+      icon: "door_sensor",
+      href: "/home/iot",
+    },
     {
       type: "item",
       label: "Leads",
