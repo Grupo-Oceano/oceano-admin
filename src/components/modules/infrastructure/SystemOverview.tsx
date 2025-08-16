@@ -34,7 +34,7 @@ export default component$<SystemOverviewProps>(({ metrics }) => {
         icon="🚀"
         progress={(metrics.activeServices / metrics.totalServices) * 100}
         progressColor="bg-teal-500"
-        className="lg:col-span-3 lg:row-span-2"
+        classes="lg:col-span-3 lg:row-span-2"
       />
 
       {/* CPU Usage */}
@@ -44,7 +44,7 @@ export default component$<SystemOverviewProps>(({ metrics }) => {
         icon="💻"
         progress={+metrics.cpuUsage}
         progressColor="bg-blue-600"
-        className="lg:col-span-3 lg:row-span-2"
+        classes="lg:col-span-3 lg:row-span-2"
       />
 
       {/* Memory */}
@@ -57,7 +57,7 @@ export default component$<SystemOverviewProps>(({ metrics }) => {
         progress={(+metrics.usedMemory / +metrics.totalMemory) * 100}
         progressColor="bg-green-600"
         subtitle={`${metrics.usedMemory} MB / ${metrics.totalMemory} MB`}
-        className="lg:col-span-4 lg:row-span-2"
+        classes="lg:col-span-4 lg:row-span-2"
       />
 
       {/* Disk Read */}

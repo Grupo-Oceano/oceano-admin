@@ -7,7 +7,7 @@ interface MetricsCardProps {
   progress?: number;
   subtitle?: string;
   progressColor?: string;
-  className?: string;
+  classes?: string;
 }
 
 export default component$<MetricsCardProps>(
@@ -18,13 +18,13 @@ export default component$<MetricsCardProps>(
     progress,
     subtitle,
     progressColor = "bg-blue-600",
-    className,
+    classes,
   }) => {
     return (
       <div
         class={[
           "rounded-lg bg-white p-6 shadow-lg transition-all duration-200 hover:-translate-0.5 hover:shadow-xl dark:bg-gray-800",
-          className,
+          classes,
         ]}
       >
         <div class="flex items-center justify-between">

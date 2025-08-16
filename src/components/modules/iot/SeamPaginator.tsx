@@ -4,14 +4,17 @@ import { $, component$ } from "@builder.io/qwik";
 import { Pagination } from "@qwik-ui/headless";
 import Icon from "~/components/etc/ui/Icon";
 
-interface Props {}
+interface Props {
+  classes?: string;
+}
 
-export default component$<Props>(() => {
+export default component$<Props>(({ classes }) => {
   const onPageChange = $((page: number) => {
     // Handle page change
+    console.log(page);
   });
   return (
-    <div>
+    <div class={classes}>
       <Pagination
         selectedPage={4}
         totalPages={10}

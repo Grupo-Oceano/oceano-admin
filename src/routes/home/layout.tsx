@@ -1,4 +1,10 @@
-import { component$, Slot, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  isBrowser,
+  Slot,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
 import { gridSectionClass } from "~/common/consts";
 import Sidebar from "~/components/etc/system/Sidebar";
 import Uppernav from "~/components/etc/system/Uppernav";
@@ -6,11 +12,13 @@ import Uppernav from "~/components/etc/system/Uppernav";
 export default component$(() => {
   const someServiceDown = useSignal(false);
 
-  useVisibleTask$(() => {
-    setTimeout(() => {
-      console.log("Simulating a service going down");
-      someServiceDown.value = true;
-    }, 2500); // Simulate a service going down after 5 seconds
+  useTask$(() => {
+    if (isBrowser) {
+      setTimeout(() => {
+        console.log("Simulating a service going down");
+        someServiceDown.value = true;
+      }, 2500); // Simulate a service going down after 5 seconds
+    }
   });
 
   return (

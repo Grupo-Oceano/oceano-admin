@@ -10,7 +10,7 @@ interface ConnectionIndicatorProps {
 }
 
 export default component$<ConnectionIndicatorProps>(
-  ({ status, lastUpdate, reconnectAttempts, onReconnect, onDisconnect }) => {
+  ({ status, lastUpdate, reconnectAttempts }) => {
     const getStatusConfig = () => {
       switch (status) {
         case "connected":

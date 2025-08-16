@@ -32,6 +32,7 @@ export const useWebSocket = (namespace: string): HookResult => {
   const socketRef = useSignal<NoSerialize<Socket> | null>(null);
 
   // Connect once
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (!socketRef.value) {
       const socket = noSerialize(

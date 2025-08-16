@@ -1,18 +1,19 @@
 import { $, component$ } from "@builder.io/qwik";
+import { useSeamDevicesList } from "~/common/hooks/seam/useSeamDevicesList";
 import { dateToReader } from "~/common/masks/dates";
+import Image from "~/components/etc/ui/Image";
 import TableFlowbite, {
   TableFlowbiteColumn,
 } from "~/components/etc/ui/TableFlowbite";
-
-import { useSeamDevicesList } from "~/common/hooks/seam/useSeamDevicesList";
-import Image from "~/components/etc/ui/Image";
 import { SeamDevice } from "~/models/iot.model";
 import SeamPaginator from "./SeamPaginator";
 
-interface Props {}
+interface Props {
+  classes?: string;
+}
 
-export default component$<Props>(() => {
-  const { data, loading, error, pagination } = useSeamDevicesList();
+export default component$<Props>(({ classes }) => {
+  const { data, loading, error } = useSeamDevicesList();
 
   const columns: TableFlowbiteColumn<SeamDevice>[] = [
     {
@@ -53,25 +54,23 @@ export default component$<Props>(() => {
   ];
 
   return (
-    <>
-      <div class="rounded-lg bg-white shadow-sm dark:bg-gray-800">
-        <div class="flex flex-row justify-between px-6 py-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Kwikset devices
-          </h2>
+    <div class={["rounded-lg bg-white shadow-sm dark:bg-gray-800", classes]}>
+      <div class="flex flex-row justify-between px-6 py-4">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          Kwikset devices
+        </h2>
 
-          <SeamPaginator />
-        </div>
-        <div class="px-3">
-          <TableFlowbite
-            columns={columns}
-            data={data}
-            loading={loading}
-            error={error}
-            loadingRows={5}
-          />
-        </div>
+        <SeamPaginator />
       </div>
-    </>
+      <div class="px-3">
+        <TableFlowbite
+          columns={columns}
+          data={data}
+          loading={loading}
+          error={error}
+          loadingRows={5}
+        />
+      </div>
+    </div>
   );
 });
