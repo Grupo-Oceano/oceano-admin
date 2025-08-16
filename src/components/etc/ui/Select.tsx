@@ -27,7 +27,7 @@ export default component$<Props>(
       <Select.Root
         onChange$={onChange$}
         value={value}
-        class="z-10 w-full rounded bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        class="z-10 w-full rounded bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-600"
       >
         {label && (
           <Select.Label class="mb-1 block text-sm font-medium text-gray-700">

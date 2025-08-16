@@ -2,10 +2,10 @@ import { component$ } from "@builder.io/qwik";
 import { Button, Spinner, Table } from "flowbite-qwik";
 import { useDownload } from "~/common/hooks/useDownload";
 import { usePaginatedFetch } from "~/common/hooks/usePaginatedFetch";
-import { dateToReader } from "~/common/mask/dates";
-import Icon from "~/components/ui/Icon";
-import TablePagination from "~/components/ui/TablePagination";
-import { Guest, LeadsTableHeaders } from "~/models/leads";
+import { dateToReader } from "~/common/masks/dates";
+import Icon from "~/components/etc/ui/Icon";
+import TablePagination from "~/components/etc/ui/TablePagination";
+import { Guest, LeadsTableHeaders } from "~/models/leads.model";
 
 export default component$(() => {
   const { data, loading, error, pagination } =

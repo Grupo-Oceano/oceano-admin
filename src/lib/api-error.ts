@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { ErrorResponse } from "~/models/errors";
 
-export function handleApiError(error: any): [ErrorResponse, null] {
+export function handleApiError<T>(error: any): ErrorResponse {
   console.log("Handling API error:", error);
   if ((error as AxiosError).isAxiosError) {
     const axiosError = error as AxiosError<any>;
@@ -11,8 +11,8 @@ export function handleApiError(error: any): [ErrorResponse, null] {
       axiosError.message ||
       "Unexpected error";
 
-    return [new ErrorResponse(status, message), null];
+    return new ErrorResponse(status, message);
   }
 
-  return [new ErrorResponse(500, error?.message), null];
+  return new ErrorResponse(500, error?.message);
 }

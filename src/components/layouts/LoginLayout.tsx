@@ -1,10 +1,10 @@
 import { component$, Slot } from "@builder.io/qwik";
-import ThemeToggle from "../ThemeToggle";
+import ThemeToggle from "../etc/system/ThemeToggle";
 
 export default component$(() => {
   return (
     <div
-      class={`bg-[url(/assets/bg${Math.floor(Math.random() * 3) + 1}.jpg)] flex min-h-screen min-w-screen flex-col bg-cover bg-center`}
+      class={`bg-[url(/assets/images/bg${Math.floor(Math.random() * 3) + 1}.jpg)] flex min-h-screen min-w-screen flex-col bg-cover bg-center`}
     >
       <div
         class={`float-left m-10 flex flex-grow justify-center rounded-2xl bg-gray-100 p-10 shadow-2xl md:w-3/5 lg:w-2/5 lg:p-6 xl:p-10 2xl:w-2/6 dark:bg-gray-800`}
