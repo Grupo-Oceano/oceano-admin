@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import ThemeToggle from "../ThemeToggle";
+import ThemeToggle from "./ThemeToggle";
 
 export default component$(() => {
   return (

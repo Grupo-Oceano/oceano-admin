@@ -13,7 +13,7 @@ dist
 dist-dev
 lib
 lib-types
-etc
+#etc
 external
 node_modules
 temp

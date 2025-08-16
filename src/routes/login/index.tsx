@@ -1,5 +1,5 @@
 import { $, component$, QRL } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
 import {
   InitialValues,
   SubmitHandler,
@@ -8,9 +8,9 @@ import {
 } from "@modular-forms/qwik";
 import { Auth } from "~/api/auth";
 import { LoginForm, LoginSchema } from "~/common/forms/login-form";
-import ActionButton from "~/components/forms/ActionButton";
-import Response from "~/components/forms/Response";
-import TextInput from "~/components/forms/TextInput";
+import ActionButton from "~/components/etc/forms/ActionButton";
+import Response from "~/components/etc/forms/Response";
+import TextInput from "~/components/etc/forms/TextInput";
 
 export const useFormLoader = routeLoader$<InitialValues<LoginForm>>(() => ({
   username: "",
@@ -22,6 +22,8 @@ export default component$(() => {
     loader: useFormLoader(),
     validate: valiForm$(LoginSchema), // ✅ Only validate client-side
   });
+
+  const nav = useNavigate();
 
   const handleSubmit: QRL<SubmitHandler<LoginForm>> = $(
     async (values, event) => {
@@ -41,7 +43,7 @@ export default component$(() => {
       };
 
       // Redirect after successful login (replace '/dashboard' with your target route)
-      window.location.href = "/home";
+      await nav("/home");
     },
   );
 

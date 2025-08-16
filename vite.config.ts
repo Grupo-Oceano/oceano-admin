@@ -59,9 +59,27 @@ export default defineConfig(({ command, mode }): UserConfig => {
       proxy: {
         "/webhook/api": {
           target: process.env.API_URL,
-          rewrite: (path) => path.replace(/^\/webhook\/api/, "/"),
+          rewrite: (path) => path.replace(/^\/webhook\/api/, ""),
           changeOrigin: true,
           secure: false, // Set to true if using HTTPS
+          configure: (proxy, _options) => {
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              // Forward cookies from the request
+              if (req.headers.cookie) {
+                proxyReq.setHeader("Cookie", req.headers.cookie);
+              }
+            });
+            proxy.on("proxyRes", (proxyRes, _req, res) => {
+              // Forward Set-Cookie headers from the response
+              if (proxyRes.headers["set-cookie"]) {
+                res.setHeader("Set-Cookie", proxyRes.headers["set-cookie"]);
+              }
+            });
+          },
+        },
+        "/socket.io": {
+          target: process.env.API_URL,
+          ws: true,
         },
       },
     },

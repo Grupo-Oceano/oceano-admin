@@ -20,8 +20,8 @@ export default component$<Props>(
         selectedClass="bg-blue-600 text-gray-600 px-3 py-1 rounded font-bold dark:bg-blue-700 dark:text-white"
         defaultClass="bg-white text-blue-600 px-3 py-1 rounded hover:bg-blue-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         dividerClass="mx-1 text-gray-400"
-        prevButtonClass="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        nextButtonClass="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        prevButtonClass="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-600"
+        nextButtonClass="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-600"
       >
         <Icon q:slot="prefix" icon="keyboard_double_arrow_left" />
         <Icon q:slot="suffix" icon="keyboard_double_arrow_right" />

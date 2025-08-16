@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { gridSectionClass } from "~/common/consts";
+import Logout from "./Logout";
 import { NavLink } from "./Navlink";
 
 export default component$(() => {
@@ -18,10 +19,23 @@ export default component$(() => {
     },
     {
       type: "item",
+      label: "Infra",
+      icon: "lan",
+      href: "/home/infrastructure",
+    },
+    {
+      type: "item",
+      label: "IoT",
+      icon: "door_sensor",
+      href: "/home/iot",
+    },
+    {
+      type: "item",
       label: "Leads",
       icon: "person_search",
       href: "/home/leads",
     },
+    { type: "separator", label: "" },
     { type: "item", label: "Profile", icon: "person", href: "/home/profile" },
   ];
 
@@ -50,35 +64,39 @@ export default component$(() => {
         <hr class="w-full rounded-b-full border-1 border-gray-300 opacity-75 dark:border-gray-600" />
       </div>
 
-      <div class="flex w-full flex-col">
-        {menuItems.map((item, index) => {
-          if (item.type === "separator") {
-            return (
-              <p
-                key={index}
-                class="m-2 font-bold text-gray-500 opacity-30 dark:text-gray-300"
-              >
-                {item.label}
-              </p>
-            );
-          }
+      <div class="h-fill flex w-full flex-col justify-between">
+        <div class="flex w-full flex-col">
+          {menuItems.map((item, index) => {
+            if (item.type === "separator") {
+              return (
+                <p
+                  key={index}
+                  class="m-2 font-bold text-gray-500 opacity-30 dark:text-gray-300"
+                >
+                  {item.label}
+                </p>
+              );
+            }
 
-          return (
-            <NavLink
-              key={index}
-              href={item.href!}
-              activeClass="bg-gray-200 dark:bg-gray-600 text-sky-600 dark:text-sky-400"
-              class="group mb-3 flex cursor-pointer flex-row content-between gap-1 rounded-md p-2 font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-200 hover:text-sky-600 dark:text-gray-300 hover:dark:bg-gray-600 hover:dark:text-sky-400"
-            >
-              <span class="material-symbol mr-2 self-center text-lg text-inherit">
-                {item.icon}
-              </span>
-              <span class="self-center text-lg text-inherit transition-all duration-200">
-                {item.label}
-              </span>
-            </NavLink>
-          );
-        })}
+            return (
+              <NavLink
+                key={index}
+                href={item.href!}
+                activeClass="bg-gray-200 dark:bg-gray-600 text-sky-600 dark:text-sky-400"
+                class="group mb-3 flex cursor-pointer flex-row content-between gap-1 rounded-md p-2 font-semibold text-gray-600 transition-all duration-200 hover:bg-gray-200 hover:text-sky-600 dark:text-gray-300 hover:dark:bg-gray-600 hover:dark:text-sky-400"
+              >
+                <span class="material-symbol mr-2 self-center text-lg text-inherit">
+                  {item.icon}
+                </span>
+                <span class="self-center text-lg text-inherit transition-all duration-200">
+                  {item.label}
+                </span>
+              </NavLink>
+            );
+          })}
+        </div>
+
+        <Logout />
       </div>
     </div>
   );

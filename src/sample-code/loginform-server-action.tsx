@@ -9,9 +9,9 @@ import {
 } from "@modular-forms/qwik";
 import * as v from "valibot";
 import { Auth } from "~/api/auth";
-import ActionButton from "~/components/forms/ActionButton";
-import Response from "~/components/forms/Response";
-import TextInput from "~/components/forms/TextInput";
+import ActionButton from "~/components/etc/forms/ActionButton";
+import Response from "~/components/etc/forms/Response";
+import TextInput from "~/components/etc/forms/TextInput";
 
 const LoginSchema = v.object({
   username: v.pipe(v.string(), v.nonEmpty("Please enter your username.")),
