@@ -201,7 +201,7 @@ export default component$<ServicesTableProps>(
     };
 
     return (
-      <div class="rounded-lg bg-white shadow-sm dark:bg-gray-800">
+      <div class="rounded-lg bg-white shadow-sm dark:bg-gray-700">
         <div class="px-6 py-4">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             Services

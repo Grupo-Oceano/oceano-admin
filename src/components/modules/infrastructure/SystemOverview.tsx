@@ -61,7 +61,7 @@ export default component$<SystemOverviewProps>(({ metrics }) => {
       />
 
       {/* Disk Read */}
-      <div class="flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2 lg:row-span-1 dark:bg-gray-800">
+      <div class="flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2 lg:row-span-1 dark:bg-gray-700">
         <Icon icon="save_as" class="text-blue-500" />
         <div>
           <p class="text-xs text-gray-500 dark:text-gray-400">Disk Read</p>
@@ -70,7 +70,7 @@ export default component$<SystemOverviewProps>(({ metrics }) => {
       </div>
 
       {/* Disk Write */}
-      <div class="flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2 lg:row-span-1 dark:bg-gray-800">
+      <div class="flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2 lg:row-span-1 dark:bg-gray-700">
         <Icon icon="save_clock" class="text-green-500" />
         <div>
           <p class="text-xs text-gray-500 dark:text-gray-400">Disk Write</p>

@@ -1,5 +1,5 @@
 import { RequestEvent, RequestHandler } from "@builder.io/qwik-city";
-import { Cookies } from "~/common/types";
+import { Cookies, SharedMap } from "~/common/types";
 import { User } from "~/models/user.model";
 import { apiCall } from "./axios";
 
@@ -20,6 +20,7 @@ export const authGuard: RequestHandler = async ({
   cookie,
   redirect,
   url,
+  sharedMap,
 }: RequestEvent) => {
   const path = url.pathname;
   const authCookie = cookie.get(Cookies.AUTH);
@@ -65,6 +66,11 @@ export const authGuard: RequestHandler = async ({
 
       // Cache the result
       authCache.set(token, { isValid, timestamp: now });
+
+      console.log("[Auth Guard]", res?.data);
+
+      // Update the user in the session
+      sharedMap.set(SharedMap.USER, res?.data);
 
       if (isValid) {
         // Authenticated and valid cookie
