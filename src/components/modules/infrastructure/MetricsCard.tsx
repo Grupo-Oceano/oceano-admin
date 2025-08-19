@@ -23,7 +23,7 @@ export default component$<MetricsCardProps>(
     return (
       <div
         class={[
-          "rounded-lg bg-white p-6 shadow-lg transition-all duration-200 hover:-translate-0.5 hover:shadow-xl dark:bg-gray-800",
+          "rounded-lg bg-white p-6 shadow-lg transition-all duration-200 hover:-translate-0.5 hover:shadow-xl dark:bg-gray-700",
           classes,
         ]}
       >

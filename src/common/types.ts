@@ -1,6 +1,9 @@
 export enum Cookies {
   AUTH = "auth",
-  SESSION = "session",
+}
+
+export enum SharedMap {
+  USER = "user",
 }
 
 export interface ApiGetAllResponse<T> {

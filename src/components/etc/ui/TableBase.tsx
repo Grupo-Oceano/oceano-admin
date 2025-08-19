@@ -57,7 +57,7 @@ export const TableBase = <T,>({
               ))}
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-700">
             {loading || !data
               ? Array.from({ length: loadingRows }).map((_, rowIdx) => (
                   <tr key={rowIdx}>

@@ -39,7 +39,7 @@ export default component$<QuickActionsProps>(
     ];
 
     return (
-      <div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+      <div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-700">
         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
           Quick Actions
         </h3>

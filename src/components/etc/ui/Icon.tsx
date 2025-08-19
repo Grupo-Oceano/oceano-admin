@@ -2,7 +2,7 @@ import { component$ } from "@builder.io/qwik";
 
 interface Props {
   icon: string;
-  class?: string;
+  class?: string | string[];
   "q:slot"?: string; // Optional slot for Qwik
 }
 

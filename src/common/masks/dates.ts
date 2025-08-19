@@ -10,6 +10,7 @@ const dateToReader = $((date: Date | string | number): string => {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Hermosillo",
   });
 });
 
