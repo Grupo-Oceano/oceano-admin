@@ -1,5 +1,5 @@
 import { component$, QRL } from "@builder.io/qwik";
-import type { ConnectionStatus } from "~/lib/stores/infrastructure.store";
+import type { ConnectionStatus } from "~/lib/stores/infrastructure-store";
 
 interface ConnectionIndicatorProps {
   status: ConnectionStatus;

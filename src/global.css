@@ -67,6 +67,7 @@
 
 ::-webkit-scrollbar-track {
   background: theme("colors.gray.100");
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -80,7 +81,7 @@
 
 /* Dark mode support */
 .dark ::-webkit-scrollbar-track {
-  background: theme("colors.gray.800");
+  background: theme("colors.gray.600");
 }
 
 .dark ::-webkit-scrollbar-thumb {

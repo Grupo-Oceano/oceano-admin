@@ -1,7 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import { gridSectionClass } from "~/common/consts";
-import Logout from "./Logout";
 import { NavLink } from "./Navlink";
+import SidebarAvatar from "./SidebarAvatar";
 
 export default component$(() => {
   const menuItems: Array<{
@@ -17,12 +17,20 @@ export default component$(() => {
       icon: "dashboard",
       href: "/home/dashboard",
     },
+    { type: "separator", label: "Server" },
     {
       type: "item",
       label: "Infra",
       icon: "lan",
       href: "/home/infrastructure",
     },
+    {
+      type: "item",
+      label: "Backups",
+      icon: "backup",
+      href: "/home/backups",
+    },
+    { type: "separator", label: "Etc" },
     {
       type: "item",
       label: "IoT",
@@ -32,11 +40,11 @@ export default component$(() => {
     {
       type: "item",
       label: "Leads",
-      icon: "person_search",
+      icon: "patient_list",
       href: "/home/leads",
     },
-    { type: "separator", label: "" },
-    { type: "item", label: "Profile", icon: "person", href: "/home/profile" },
+    //{ type: "separator", label: "Etc" },
+    //{ type: "item", label: "Profile", icon: "person", href: "/home/profile" },
   ];
 
   return (
@@ -96,7 +104,7 @@ export default component$(() => {
           })}
         </div>
 
-        <Logout />
+        <SidebarAvatar />
       </div>
     </div>
   );

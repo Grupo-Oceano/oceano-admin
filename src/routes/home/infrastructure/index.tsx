@@ -7,7 +7,7 @@ import {
   SystemOverview,
 } from "~/components/modules/infrastructure";
 import ConnectionIndicator from "~/components/modules/infrastructure/ConnectionIndicator";
-import { InfrastructureContext } from "~/lib/stores/infrastructure.store";
+import { InfrastructureContext } from "~/lib/stores/infrastructure-store";
 
 export default component$(() => {
   const { services, metrics, lastUpdate } = useContext(InfrastructureContext);
