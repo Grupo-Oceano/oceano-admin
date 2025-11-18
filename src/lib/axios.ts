@@ -10,7 +10,7 @@ export type Methods = keyof Pick<AxiosClass, "get" | "post" | "put" | "delete">;
 export class AxiosClass {
   private instance: AxiosInstance;
 
-  constructor({ baseURL = "/webhook/api" }: { baseURL?: string }) {
+  constructor({ baseURL = "/backbone/api" }: { baseURL?: string }) {
     this.instance = axios.create({
       baseURL,
       withCredentials: true,
@@ -116,7 +116,7 @@ export class AxiosClass {
 
 // ✅ Axios instancia compartida (puedes agregar headers globales, interceptores, etc.)
 export const apiCall: AxiosClass = new AxiosClass({
-  baseURL: isBrowser ? "/webhook/api" : `${environment.API_URL}`,
+  baseURL: isBrowser ? "/backbone/api" : `${environment.API_URL}`,
 });
 
 // ✅ Interfaz genérica de respuesta

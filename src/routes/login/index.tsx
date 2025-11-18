@@ -100,6 +100,7 @@ export default component$(() => {
         type="submit"
         form="login-form"
         class="h-10 w-full bg-sky-600 px-5 text-white hover:bg-sky-600/80 lg:w-auto dark:bg-sky-400 dark:text-gray-900 dark:hover:bg-sky-400/80"
+        disabled={loginForm.submitting}
       >
         <span class="material-symbol" q:slot="iconBefore">
           login

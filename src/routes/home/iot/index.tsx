@@ -6,7 +6,7 @@ export default component$(() => {
     <div class="min-h-screen p-6 pt-0">
       {/* Header */}
       <div class="mb-6 flex items-center justify-between">
-        <div>
+        <div class="px-6">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             Internet of Things Management
           </h1>

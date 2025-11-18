@@ -32,5 +32,5 @@ export const mapBatteryLevelToClass = (level: number = 0): string => {
   if (level > 0.5) return "text-green-500 dark:text-green-700";
   if (level > 0.15) return "text-yellow-500 dark:text-yellow-700";
   if (level > 0) return "text-red-500 dark:text-red-700";
-  return "text-gray-500 dark:text-gray-700";
+  return "text-gray-500";
 };

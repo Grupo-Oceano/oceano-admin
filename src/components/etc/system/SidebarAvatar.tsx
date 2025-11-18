@@ -1,10 +1,13 @@
 import { $, component$ } from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
 import { Avatar, Dropdown } from "flowbite-qwik";
-import { useUser } from "~/routes/home/layout";
+import { User } from "~/models/user.model";
 
-export default component$(() => {
-  const user = useUser();
+interface Props {
+  user: User | null;
+}
+
+export default component$<Props>(({ user }) => {
   const navigate = useNavigate();
 
   const logout = $(async () => {
@@ -29,16 +32,16 @@ export default component$(() => {
             rounded
           >
             <div class="space-y-1 text-start font-medium dark:text-white">
-              <div>{user?.value?.username}</div>
+              <div>{user?.username}</div>
               <div class="text-sm text-gray-500 dark:text-gray-400">admin</div>
             </div>
           </Avatar>
         }
       >
         <Dropdown.Item header>
-          <span class="block text-sm">{user?.value?.username}</span>
+          <span class="block text-sm">{user?.username}</span>
           <span class="block truncate text-sm font-medium">
-            {user?.value?.username}@flowbite.com
+            {user?.username}@flowbite.com
           </span>
         </Dropdown.Item>
         <Dropdown.Item>Dashboard</Dropdown.Item>

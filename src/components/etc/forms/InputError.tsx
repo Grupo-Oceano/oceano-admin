@@ -1,6 +1,6 @@
 import { component$, isBrowser, useSignal, useTask$ } from "@builder.io/qwik";
 import clsx from "clsx";
-import { Expandable } from "./Expandable";
+import Expandable from "./Expandable";
 
 interface Props {
   name: string;

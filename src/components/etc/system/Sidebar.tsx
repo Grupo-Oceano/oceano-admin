@@ -1,9 +1,12 @@
 import { component$ } from "@builder.io/qwik";
 import { gridSectionClass } from "~/common/consts";
-import { NavLink } from "./Navlink";
+import { useUser } from "~/routes/home/layout";
+import NavLink from "./Navlink";
 import SidebarAvatar from "./SidebarAvatar";
 
 export default component$(() => {
+  const user = useUser();
+
   const menuItems: Array<{
     type: "separator" | "item";
     label?: string;
@@ -42,6 +45,12 @@ export default component$(() => {
       label: "Leads",
       icon: "patient_list",
       href: "/home/leads",
+    },
+    {
+      type: "item",
+      label: "UI",
+      icon: "labs",
+      href: "/home/ui-test",
     },
     //{ type: "separator", label: "Etc" },
     //{ type: "item", label: "Profile", icon: "person", href: "/home/profile" },
@@ -104,7 +113,7 @@ export default component$(() => {
           })}
         </div>
 
-        <SidebarAvatar />
+        <SidebarAvatar user={user.value} />
       </div>
     </div>
   );

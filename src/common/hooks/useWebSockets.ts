@@ -14,17 +14,23 @@ export enum WSEvent {
   SERVICE_STATUS = "service_status",
   METRICS_UPDATE = "metrics_update",
 
+  // IOT events
+  DEVICE_STATUS_UPDATE = "device_status_update-", // suffix with device ID, thats the reason for '-' at the end
+
   // Miscellaneous events
   MESSAGE = "message",
 }
 
 export enum WSNamespace {
   OCEANO_INFRA = "oceano-infra",
+  IOT = "iot",
 }
 
 interface HookResult {
   send$: QRL<(eventName: WSEvent, data?: any) => void>;
-  listen$: QRL<(eventName: WSEvent, callback: (data: any) => void) => void>;
+  listen$: QRL<
+    (eventName: WSEvent | string, callback: (data: any) => void) => void
+  >;
   socketRef: Signal<NoSerialize<Socket> | null>;
 }
 
@@ -61,10 +67,12 @@ export const useWebSocket = (namespace: string): HookResult => {
     socketRef.value?.emit(eventName, data);
   });
 
-  const listen$ = $((eventName: WSEvent, callback: (data: any) => void) => {
-    socketRef.value?.off(eventName, callback); // remove if exists
-    socketRef.value?.on(eventName, callback);
-  });
+  const listen$ = $(
+    (eventName: WSEvent | string, callback: (data: any) => void) => {
+      socketRef.value?.off(eventName, callback); // remove if exists
+      socketRef.value?.on(eventName, callback);
+    },
+  );
 
   return { send$, listen$, socketRef };
 };

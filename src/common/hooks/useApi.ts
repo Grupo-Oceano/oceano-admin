@@ -26,6 +26,7 @@ export const useApi = <T>(path: string, method: Methods): HookResult<T> => {
     try {
       const [error, response] = await apiCall[method]<T>(path, { signal });
       if (error || !response) {
+        console.log(error);
         throw new Error(`Error: ${error?.status} ${error?.message}`);
       }
       result.data = response.data;

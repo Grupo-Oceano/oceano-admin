@@ -1,13 +1,13 @@
 import { ClassList, component$ } from "@builder.io/qwik";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   name: string;
   label?: string;
   required?: boolean;
   margin?: "none";
   class?: ClassList;
-};
+}
 
 export default component$<Props>(
   ({ name, label, required, margin, class: labelClass }) => (

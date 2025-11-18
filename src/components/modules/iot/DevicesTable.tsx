@@ -1,6 +1,7 @@
-import { $, component$ } from "@builder.io/qwik";
+import { $, component$, useSignal } from "@builder.io/qwik";
 import { useSeamDevicesList } from "~/common/hooks/seam/useSeamDevicesList";
 import { dateToReader } from "~/common/masks/dates";
+import Button from "~/components/etc/ui/Button";
 import Icon from "~/components/etc/ui/Icon";
 import Image from "~/components/etc/ui/Image";
 import TableFlowbite, {
@@ -8,6 +9,8 @@ import TableFlowbite, {
 } from "~/components/etc/ui/TableFlowbite";
 import { batteryIcon, mapBatteryLevelToClass } from "~/lib/utils/seam-devices";
 import { SeamDevice } from "~/models/iot.model";
+import DeviceLiveUpdate from "./DeviceLiveUpdate";
+import MatchCSVToLocks from "./MatchCSVToLocks";
 
 interface Props {
   classes?: string;
@@ -16,6 +19,8 @@ interface Props {
 export default component$<Props>(({ classes }) => {
   const { data, loading, error /* limit, page, pagination, onPageChange */ } =
     useSeamDevicesList();
+
+  const addedfile = useSignal(false);
 
   const columns: TableFlowbiteColumn<SeamDevice>[] = [
     /* {
@@ -80,6 +85,7 @@ export default component$<Props>(({ classes }) => {
               "Offline"
             )}
           </div>
+          <DeviceLiveUpdate device={row} addedfile={addedfile.value} />
         </div>
       )),
     },
@@ -89,12 +95,33 @@ export default component$<Props>(({ classes }) => {
     },
   ];
 
+  const openFileSystem = $(() => {
+    // Trigger add file
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv";
+    input.click();
+
+    input.addEventListener("change", (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        addedfile.value = true;
+      }
+    });
+  });
+
   return (
     <div class={["rounded-lg bg-white shadow-sm dark:bg-gray-800", classes]}>
       <div class="flex flex-row items-center justify-between px-6 py-4">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
           Kwikset devices
         </h2>
+
+        <MatchCSVToLocks />
+
+        <Button style="primary" onClick$={openFileSystem}>
+          Set locks from CSV
+        </Button>
 
         {/* <SeamPaginator
           page={page}

@@ -57,9 +57,9 @@ export default defineConfig(({ command, mode }): UserConfig => {
         "Cache-Control": "public, max-age=0",
       },
       proxy: {
-        "/webhook/api": {
+        "/backbone/api": {
           target: process.env.API_URL,
-          rewrite: (path) => path.replace(/^\/webhook\/api/, ""),
+          rewrite: (path) => path.replace(/^\/backbone\/api/, ""),
           changeOrigin: true,
           secure: false, // Set to true if using HTTPS
           configure: (proxy, _options) => {

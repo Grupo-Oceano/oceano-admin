@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, Slot } from "@builder.io/qwik";
 
 interface Props {
   icon: string;
@@ -9,9 +9,13 @@ interface Props {
 export default component$<Props>(
   ({ icon, class: className, "q:slot": slot }) => {
     return (
-      <span class={["material-symbol text-lg", className]} q:slot={slot}>
-        {icon}
-      </span>
+      <>
+        <Slot q:slot="prefix" />
+        <span class={["material-symbol text-lg", className]} q:slot={slot}>
+          {icon}
+        </span>
+        <Slot q:slot="sufix" />
+      </>
     );
   },
 );

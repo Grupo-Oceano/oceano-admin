@@ -23,6 +23,7 @@ type UnstyledButtonProps = DefaultButtonProps & {
   class?: string;
   "aria-label"?: string;
   onClick$?: QRL<() => unknown>;
+  children?: any;
 };
 
 /**

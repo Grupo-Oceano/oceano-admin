@@ -2,7 +2,7 @@ import { component$, useSignal, useTask$ } from "@builder.io/qwik";
 import { isBrowser } from "@builder.io/qwik/build";
 import type { FormResponse, FormStore } from "@modular-forms/qwik";
 import clsx from "clsx";
-import { Expandable } from "./Expandable";
+import Expandable from "./Expandable";
 
 type Props = {
   of: FormStore<any, any>;
