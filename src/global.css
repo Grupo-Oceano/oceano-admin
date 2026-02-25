@@ -1,0 +1,93 @@
+@import "tailwindcss";
+@import "./flowbite.css";
+@source inline("bg-[url(/assets/images/bg1.jpg)]");
+@source inline("bg-[url(/assets/images/bg2.jpg)]");
+@source inline("bg-[url(/assets/images/bg3.jpg)]");
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --radius-5xl: 3rem;
+}
+
+.material-symbol {
+  @apply align-middle font-[Material_Symbols_Rounded] font-normal not-italic;
+}
+
+* {
+  transition: background-color cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.3s;
+  @apply font-sans;
+}
+
+.h-fill {
+  height: -webkit-fill-available;
+}
+/* * {
+  outline: 1px dashed rgba(255, 0, 0, 0.3);
+} */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.7s ease-out both;
+}
+.animate-slide-up {
+  animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: theme("colors.gray.100");
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: theme("colors.gray.400");
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.gray.600");
+}
+
+/* Dark mode support */
+.dark ::-webkit-scrollbar-track {
+  background: theme("colors.gray.600");
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: theme("colors.gray.700");
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.gray.600");
+}

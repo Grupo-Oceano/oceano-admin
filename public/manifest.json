@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "Grupo Oceano Admin Systems",
+  "short_name": "Grupo Oceano",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "Admin systems for Grupo Oceano"
+}

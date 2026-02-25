@@ -1,0 +1,13 @@
+import { apiCall } from "~/lib/axios";
+import { UserLogin } from "~/models/user.model";
+
+const login = async (username: string, password: string) => {
+  return apiCall.post<UserLogin>("/auth/login", {
+    username,
+    password,
+  });
+};
+
+export const Auth = {
+  login,
+};
