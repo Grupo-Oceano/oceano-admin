@@ -66,6 +66,9 @@ const Status = component$<{ row: EscapiaQueueItem }>(({ row }) => <EscapiaStatus
 const Claim = component$<{ row: EscapiaQueueItem }>(({ row }) => {
   const claim = useClaim();
   const unclaim = useUnclaim();
+  // Each `useXxx()` call is its own action store: toast the ones this row submits.
+  useActionToast(claim);
+  useActionToast(unclaim);
   const action = row.assignee ? unclaim : claim;
   return (
     <Form action={action}>
@@ -93,8 +96,6 @@ const columns: Column<EscapiaQueueItem>[] = [
 
 export default component$(() => {
   const queue = useEscapiaQueue();
-  useActionToast(useClaim());
-  useActionToast(useUnclaim());
   const { view, items, error } = queue.value;
   return (
     <div class="flex flex-col gap-3">

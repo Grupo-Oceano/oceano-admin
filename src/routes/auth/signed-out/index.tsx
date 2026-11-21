@@ -9,7 +9,7 @@ export default component$(() => (
     <p class="text-gray-700 dark:text-gray-200" data-testid="signed-out">
       You're signed out of Oceano Admin and Microsoft.
     </p>
-    <a href="/auth/login" class={button({ class: "lg:self-start" })}>
+    <a href="/auth/login/" class={button({ class: "lg:self-start" })}>
       <span class="material-symbols-rounded" aria-hidden="true">
         login
       </span>

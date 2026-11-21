@@ -49,8 +49,8 @@ describe("sanitizeReturnTo", () => {
 
   it("loginUrl encodes a sanitized returnTo", () => {
     expect(loginUrl("/sites/rpn/?status=rejected")).toBe(
-      "/auth/login?returnTo=%2Fsites%2Frpn%2F%3Fstatus%3Drejected",
+      "/auth/login/?returnTo=%2Fsites%2Frpn%2F%3Fstatus%3Drejected",
     );
-    expect(loginUrl("https://evil.example")).toBe("/auth/login?returnTo=%2F");
+    expect(loginUrl("https://evil.example")).toBe("/auth/login/?returnTo=%2F");
   });
 });

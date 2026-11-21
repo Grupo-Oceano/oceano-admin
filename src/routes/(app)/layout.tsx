@@ -12,7 +12,7 @@ export const onRequest = requireStaff;
 export const useSession = routeLoader$((ev): SessionView => {
   const session = sessionOf(ev);
   // The guard always sets it; without one there is nothing safe to render.
-  if (!session) throw ev.redirect(302, "/auth/login");
+  if (!session) throw ev.redirect(302, "/auth/login/");
   return { staff: session.staff, sites: session.sites };
 });
 

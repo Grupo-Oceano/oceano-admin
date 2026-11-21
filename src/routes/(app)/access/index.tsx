@@ -134,6 +134,8 @@ const FILTERS = [["", "All"], ...STAFF_STATUSES.map((s) => [s, s[0].toUpperCase(
 const AddStaffDialog = component$(() => {
   const page = useContext(StaffPageCtx);
   const create = useCreateStaff();
+  // Each `useXxx()` call is its own action store: toast the one the form submits.
+  useActionToast(create);
   const errors = create.value?.fieldErrors;
   useTask$(({ track }) => {
     const value = track(() => create.value);
@@ -186,6 +188,10 @@ const ManageDialog = component$<{ person: StaffMember | null; sites: Site[]; isS
     const setOwner = useSetOwner();
     const putGrant = usePutGrant();
     const revokeGrant = useRevokeGrant();
+    useActionToast(setStatus);
+    useActionToast(setOwner);
+    useActionToast(putGrant);
+    useActionToast(revokeGrant);
     return (
       <Dialog
         open={!!person}
@@ -294,16 +300,6 @@ const ManageDialog = component$<{ person: StaffMember | null; sites: Site[]; isS
   },
 );
 
-/** Toasts for every access action on this page (the dialogs stay open so several changes can be made). */
-const ActionToasts = component$(() => {
-  useActionToast(useCreateStaff());
-  useActionToast(useSetStatus());
-  useActionToast(useSetOwner());
-  useActionToast(usePutGrant());
-  useActionToast(useRevokeGrant());
-  return <></>;
-});
-
 export default component$(() => {
   const staff = useStaff();
   const page = useStore<StaffPageState>({ manageId: null, adding: false, addKey: 0 });
@@ -314,7 +310,6 @@ export default component$(() => {
 
   return (
     <div class="flex flex-col gap-4">
-      <ActionToasts />
       {pending > 0 && query.status !== "pending" && (
         <Alert tone="warning" icon="person_alert" testId="pending-banner">
           {pending === 1 ? "1 person signed in and is" : `${pending} people signed in and are`} waiting for access.{" "}

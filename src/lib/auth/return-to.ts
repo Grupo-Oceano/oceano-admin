@@ -45,6 +45,6 @@ export function returnPathOf(url: URL): string {
   return sanitizeReturnTo(`${url.pathname}${qs ? `?${qs}` : ""}`);
 }
 
-/** `/auth/login?returnTo=…` with a sanitized target. */
+/** `/auth/login/?returnTo=…` with a sanitized target. */
 export const loginUrl = (returnTo: string): string =>
-  `/auth/login?returnTo=${encodeURIComponent(sanitizeReturnTo(returnTo))}`;
+  `/auth/login/?returnTo=${encodeURIComponent(sanitizeReturnTo(returnTo))}`;
