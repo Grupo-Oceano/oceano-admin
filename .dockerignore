@@ -1,0 +1,11 @@
+node_modules
+dist
+server
+tmp
+.git
+.env
+.env.*
+!.env.example
+.claude
+*.log
+tsconfig.tsbuildinfo
