@@ -11,6 +11,9 @@ export type StaffStatus = (typeof STAFF_STATUSES)[number];
 
 const SITE_KEY = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const ROLE = /^[a-z][a-z0-9_-]{0,31}$/;
+const PERMISSION_KEY = /^[a-z][a-z0-9_-]{0,31}(\.[a-z][a-z0-9_-]{0,31}){0,3}$/;
+/** A site key, or `*` = every site (the form's "All sites" option). */
+const SITE_OR_ALL = /^(\*|[a-z0-9][a-z0-9-]{0,31})$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** `/access?status=`: empty = everyone (pending first). */
@@ -64,6 +67,18 @@ export const revokeGrantInput = z.object({
   site: z.string().regex(SITE_KEY),
 });
 
+/** PUT /admin/staff/:id/permissions/:key { site } (`*` → null) and DELETE …?site=<key|*> */
+export const permissionInput = z.object({
+  id: staffId,
+  key: z.string().regex(PERMISSION_KEY, "Choose a permission."),
+  site: z.string().regex(SITE_OR_ALL, "Choose a site or all sites."),
+});
+
+/** The PUT body: `*` is the all-sites row (`site: null`). */
+export const permissionBody = (site: string): { site: string | null } => ({
+  site: site === "*" ? null : site,
+});
+
 // ---- Response shapes (core sends dates as ISO strings) ----
 
 export type Grant = {
@@ -71,6 +86,21 @@ export type Grant = {
   role: string;
   grantedBy: string | null;
   grantedAt: string;
+};
+
+/** A permission someone holds (`site` null = every site). */
+export type StaffPermission = {
+  key: string;
+  site: string | null;
+  grantedBy: string | null;
+  grantedAt: string;
+};
+
+/** GET /admin/permissions (owners only). */
+export type Permission = {
+  key: string;
+  description: string;
+  scope: "global" | "site";
 };
 
 export type StaffMember = {
@@ -84,6 +114,7 @@ export type StaffMember = {
   createdAt: string;
   updatedAt: string;
   grants: Grant[];
+  permissions: StaffPermission[];
 };
 
 export type Site = {

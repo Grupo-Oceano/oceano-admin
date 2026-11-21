@@ -40,7 +40,15 @@ import {
 } from "~/components/ui";
 import { accessErrorMessage } from "~/features/access/errors";
 import {
+  controlsFor,
+  scopeLabel,
+  viewerOf,
+  type Viewer,
+} from "~/features/access/policy";
+import {
   createStaffInput,
+  permissionBody,
+  permissionInput,
   putGrantInput,
   revokeGrantInput,
   setOwnerInput,
@@ -48,37 +56,69 @@ import {
   sortStaff,
   staffQuery,
   STAFF_STATUSES,
+  type Permission,
   type Site,
   type StaffMember,
 } from "~/features/access/schema";
-import { isOwner, sessionOf } from "~/lib/auth/guard.server";
+import { canManageAccess, isOwner, sessionOf } from "~/lib/auth/guard.server";
 import { coreApi } from "~/lib/backends/core.server";
 import type { ApiResponse, Result } from "~/lib/backends/types";
 import { loaderResult } from "~/lib/backends/unwrap.server";
 import { searchKeys, searchObject } from "~/lib/crud/search-keys";
 import { useActionToast } from "~/lib/crud/use-action-toast";
 
-/** Staff (pending first, so new sign-ins are visible) and the sites with their roles. Owners only. */
+const NO_VIEWER: Viewer = {
+  id: "",
+  isOwner: false,
+  manage: { all: false, sites: [] },
+};
+
+/**
+ * Staff (pending first, so new sign-ins are visible), the sites the viewer may manage (core filters them for
+ * access managers) and, for owners, the permission catalog. Owners and access managers.
+ */
 export const useStaff = routeLoader$(
   async (ev) => {
     const query = staffQuery.parse(searchObject(ev.url.searchParams));
-    if (!isOwner(ev))
-      return { query, rows: [], sites: [], error: null, selfId: null };
+    const session = sessionOf(ev);
+    if (!session || !canManageAccess(ev))
+      return {
+        query,
+        rows: [],
+        sites: [],
+        permissions: [] as Permission[],
+        error: null,
+        viewer: NO_VIEWER,
+      };
     const core = coreApi(ev);
-    const [staff, sites] = await Promise.all([
+    const owner = session.staff.isOwner;
+    const [staff, sites, catalog] = await Promise.all([
       core.get<ApiResponse<StaffMember[]>>("/admin/staff", {
         status: query.status,
       }),
       core.get<ApiResponse<Site[]>>("/admin/sites"),
+      owner
+        ? core.get<ApiResponse<Permission[]>>("/admin/permissions")
+        : Promise.resolve<Result<ApiResponse<Permission[]>>>([
+            null,
+            { message: "", data: [] },
+          ]),
     ]);
     const list = loaderResult(ev, staff, { message: accessErrorMessage });
     const siteList = loaderResult(ev, sites, { message: accessErrorMessage });
+    const permissions = loaderResult(ev, catalog, {
+      message: accessErrorMessage,
+    });
     return {
       query,
-      rows: sortStaff(list.data?.data ?? []),
+      rows: sortStaff(list.data?.data ?? []).map((r) => ({
+        ...r,
+        permissions: r.permissions ?? [],
+      })),
       sites: (siteList.data?.data ?? []).filter((s) => s.active),
-      error: list.error ?? siteList.error,
-      selfId: sessionOf(ev)?.staff.id ?? null,
+      permissions: permissions.data?.data ?? [],
+      error: list.error ?? siteList.error ?? permissions.error,
+      viewer: viewerOf(session),
     };
   },
   { search: searchKeys(staffQuery) },
@@ -86,13 +126,17 @@ export const useStaff = routeLoader$(
 
 type Ev = RequestEventAction;
 
-/** Every access action: owner check → oceano-core → `{ message }` or `ev.fail(status, { message })`. */
-async function ownerWrite<T>(
+/**
+ * Every access action: a coarse check here (owners, or access managers for staff and grant changes) →
+ * oceano-core, which applies the full policy → `{ message }` or `ev.fail(status, { message })`.
+ */
+async function accessWrite<T>(
   ev: Ev,
+  who: "owner" | "manager",
   call: () => Promise<Result<T>>,
   done: string,
 ) {
-  if (!isOwner(ev))
+  if (who === "owner" ? !isOwner(ev) : !canManageAccess(ev))
     return ev.fail(403, {
       message: accessErrorMessage({ status: 403, message: "owner_only" }),
     });
@@ -104,8 +148,9 @@ async function ownerWrite<T>(
 
 export const useCreateStaff = routeAction$(
   (body, ev) =>
-    ownerWrite(
+    accessWrite(
       ev,
+      "manager",
       () => coreApi(ev).post<ApiResponse<StaffMember>>("/admin/staff", body),
       `${body.email} can now sign in. Give them a site.`,
     ),
@@ -114,8 +159,9 @@ export const useCreateStaff = routeAction$(
 
 export const useSetStatus = routeAction$(
   ({ id, status }, ev) =>
-    ownerWrite(
+    accessWrite(
       ev,
+      "manager",
       () =>
         coreApi(ev).patch<ApiResponse<StaffMember>>(`/admin/staff/${id}`, {
           status,
@@ -127,8 +173,9 @@ export const useSetStatus = routeAction$(
 
 export const useSetOwner = routeAction$(
   ({ id, isOwner: owner }, ev) =>
-    ownerWrite(
+    accessWrite(
       ev,
+      "owner",
       () =>
         coreApi(ev).patch<ApiResponse<StaffMember>>(`/admin/staff/${id}`, {
           isOwner: owner,
@@ -140,8 +187,9 @@ export const useSetOwner = routeAction$(
 
 export const usePutGrant = routeAction$(
   ({ id, site, role }, ev) =>
-    ownerWrite(
+    accessWrite(
       ev,
+      "manager",
       () => coreApi(ev).put(`/admin/staff/${id}/grants/${site}`, { role }),
       `Role on ${site} set to ${role}.`,
     ),
@@ -150,12 +198,44 @@ export const usePutGrant = routeAction$(
 
 export const useRevokeGrant = routeAction$(
   ({ id, site }, ev) =>
-    ownerWrite(
+    accessWrite(
       ev,
+      "manager",
       () => coreApi(ev).delete(`/admin/staff/${id}/grants/${site}`),
       `Access to ${site} revoked.`,
     ),
   zod$(revokeGrantInput),
+);
+
+export const usePutPermission = routeAction$(
+  ({ id, key, site }, ev) =>
+    accessWrite(
+      ev,
+      "owner",
+      () =>
+        coreApi(ev).put(
+          `/admin/staff/${id}/permissions/${key}`,
+          permissionBody(site),
+        ),
+      site === "*"
+        ? `${key} granted on all sites.`
+        : `${key} granted on ${site}.`,
+    ),
+  zod$(permissionInput),
+);
+
+export const useRevokePermission = routeAction$(
+  ({ id, key, site }, ev) =>
+    accessWrite(
+      ev,
+      "owner",
+      () =>
+        coreApi(ev).delete(
+          `/admin/staff/${id}/permissions/${key}?site=${encodeURIComponent(site)}`,
+        ),
+      `${key} revoked.`,
+    ),
+  zod$(permissionInput),
 );
 
 const FILTERS = [
@@ -234,12 +314,112 @@ const AddStaffDialog = component$(() => {
   );
 });
 
-/** Status, owner flag and site roles of one person. Every button is its own form (works without JS). */
+/** Owners only: grant or revoke a permission (today `access.manage`) for one site or every site. */
+const PermissionsSection = component$<{
+  person: StaffMember;
+  sites: Site[];
+  catalog: Permission[];
+}>(({ person, sites, catalog }) => {
+  const putPermission = usePutPermission();
+  const revokePermission = useRevokePermission();
+  useActionToast(putPermission);
+  useActionToast(revokePermission);
+  const describe = (key: string) =>
+    catalog.find((p) => p.key === key)?.description ?? key;
+  return (
+    <section class="flex flex-col gap-3" data-testid="permissions">
+      <h3 class="font-semibold text-gray-900 dark:text-white">Permissions</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Access managers can add staff, activate and disable them, and give roles
+        on their sites. They can't change owners, other managers or permissions.
+        This doesn't open the site for them: give them a site role too if they
+        need it.
+      </p>
+      {person.permissions.length === 0 ? (
+        <p class="text-sm text-gray-500 dark:text-gray-400">No permissions.</p>
+      ) : (
+        <ul class="flex flex-col gap-2">
+          {person.permissions.map((p) => (
+            <li
+              key={`${p.key}:${p.site ?? "*"}`}
+              class="flex flex-wrap items-center justify-between gap-2"
+              data-testid={`permission-${p.key}-${p.site ?? "all"}`}
+            >
+              <span class="flex flex-wrap items-center gap-2 text-sm">
+                <span class="font-medium">{describe(p.key)}</span>
+                <Badge tone="info">{scopeLabel(p.site, sites)}</Badge>
+              </span>
+              <Form action={revokePermission}>
+                <input type="hidden" name="id" value={person.id} />
+                <input type="hidden" name="key" value={p.key} />
+                <input type="hidden" name="site" value={p.site ?? "*"} />
+                <Button
+                  type="submit"
+                  size="sm"
+                  intent="ghost"
+                  icon="remove_circle"
+                  loading={revokePermission.isRunning}
+                >
+                  Revoke
+                </Button>
+              </Form>
+            </li>
+          ))}
+        </ul>
+      )}
+      {catalog.length > 0 && (
+        <Form
+          action={putPermission}
+          class="flex flex-col gap-2 sm:flex-row sm:items-end"
+        >
+          <input type="hidden" name="id" value={person.id} />
+          <Field class="flex-1">
+            <Label>Permission</Label>
+            <Select name="key" required>
+              {catalog.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.description}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field class="flex-1">
+            <Label>On</Label>
+            <Select name="site" required testId="permission-site">
+              <option value="*">All sites</option>
+              {sites.map((site) => (
+                <option key={site.key} value={site.key}>
+                  {site.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Button
+            type="submit"
+            size="sm"
+            icon="add_moderator"
+            loading={putPermission.isRunning}
+            class="mb-0.5"
+            testId="permission-grant"
+          >
+            Grant
+          </Button>
+        </Form>
+      )}
+    </section>
+  );
+});
+
+/**
+ * Status, owner flag, site roles and (owners) permissions of one person. Each viewer sees only the controls
+ * oceano-core would accept from them (`controlsFor`); core checks again. Every button is its own form.
+ */
 const ManageDialog = component$<{
   person: StaffMember | null;
   sites: Site[];
-  isSelf: boolean;
-}>(({ person, sites, isSelf }) => {
+  catalog: Permission[];
+  viewer: Viewer;
+}>(({ person, sites, catalog, viewer }) => {
   const page = useContext(StaffPageCtx);
   const setStatus = useSetStatus();
   const setOwner = useSetOwner();
@@ -249,6 +429,15 @@ const ManageDialog = component$<{
   useActionToast(setOwner);
   useActionToast(putGrant);
   useActionToast(revokeGrant);
+  const isSelf = !!person && person.id === viewer.id;
+  const controls = person ? controlsFor(viewer, person, sites) : null;
+  const editable = new Set(controls?.grantSites ?? []);
+  const editableSites = sites.filter((s) => editable.has(s.key));
+  // Roles on sites this viewer can't change: shown read-only.
+  const otherGrants = person
+    ? person.grants.filter((g) => !editable.has(g.site))
+    : [];
+  const manager = !!person && person.permissions.length > 0;
   return (
     <Dialog
       open={!!person}
@@ -258,78 +447,97 @@ const ManageDialog = component$<{
       onClose$={() => (page.manageId = null)}
       testId="manage-staff"
     >
-      {person && (
+      {person && controls && (
         <div class="flex flex-col gap-5" key={person.id}>
           <div class="flex flex-wrap items-center gap-2 text-sm">
             <span class="text-gray-500 dark:text-gray-400">{person.email}</span>
             <Badge tone={STATUS_TONE[person.status]}>{person.status}</Badge>
             {person.isOwner && <Badge tone="info">Owner</Badge>}
+            {manager && <Badge tone="info">Access manager</Badge>}
             {isSelf && <Badge>You</Badge>}
           </div>
 
-          <section class="flex flex-col gap-2">
-            <h3 class="font-semibold text-gray-900 dark:text-white">Account</h3>
-            <div class="flex flex-wrap gap-2">
-              <Form action={setStatus}>
-                <input type="hidden" name="id" value={person.id} />
-                {person.status === "active" ? (
-                  <>
-                    <input type="hidden" name="status" value="disabled" />
-                    <Button
-                      type="submit"
-                      intent="danger"
-                      size="sm"
-                      icon="block"
-                      loading={setStatus.isRunning}
-                      disabled={isSelf}
-                      testId="disable"
-                    >
-                      Disable
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <input type="hidden" name="status" value="active" />
-                    <Button
-                      type="submit"
-                      intent="success"
-                      size="sm"
-                      icon="check"
-                      loading={setStatus.isRunning}
-                      testId="activate"
-                    >
-                      Activate
-                    </Button>
-                  </>
+          {controls.protected && (
+            <Alert tone="info" icon="lock" testId="protected">
+              {isSelf
+                ? "This is your own account. An owner can change it."
+                : "Only an owner can change owners and other access managers."}
+            </Alert>
+          )}
+
+          {(controls.status || controls.ownerControls) && (
+            <section class="flex flex-col gap-2">
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                Account
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {controls.status && (
+                  <Form action={setStatus}>
+                    <input type="hidden" name="id" value={person.id} />
+                    {controls.status === "disable" ? (
+                      <>
+                        <input type="hidden" name="status" value="disabled" />
+                        <Button
+                          type="submit"
+                          intent="danger"
+                          size="sm"
+                          icon="block"
+                          loading={setStatus.isRunning}
+                          disabled={isSelf}
+                          testId="disable"
+                        >
+                          Disable
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <input type="hidden" name="status" value="active" />
+                        <Button
+                          type="submit"
+                          intent="success"
+                          size="sm"
+                          icon="check"
+                          loading={setStatus.isRunning}
+                          testId="activate"
+                        >
+                          Activate
+                        </Button>
+                      </>
+                    )}
+                  </Form>
                 )}
-              </Form>
-              <Form action={setOwner}>
-                <input type="hidden" name="id" value={person.id} />
-                <input
-                  type="hidden"
-                  name="isOwner"
-                  value={person.isOwner ? "false" : "true"}
-                />
-                <Button
-                  type="submit"
-                  intent="secondary"
-                  size="sm"
-                  icon={person.isOwner ? "remove_moderator" : "shield_person"}
-                  loading={setOwner.isRunning}
-                  disabled={isSelf && person.isOwner}
-                  testId="toggle-owner"
-                >
-                  {person.isOwner ? "Remove owner role" : "Make owner"}
-                </Button>
-              </Form>
-            </div>
-            {person.status === "pending" && (
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                Signed in and waiting. Activate them and give them a site role
-                below.
-              </p>
-            )}
-          </section>
+                {controls.ownerControls && (
+                  <Form action={setOwner}>
+                    <input type="hidden" name="id" value={person.id} />
+                    <input
+                      type="hidden"
+                      name="isOwner"
+                      value={person.isOwner ? "false" : "true"}
+                    />
+                    <Button
+                      type="submit"
+                      intent="secondary"
+                      size="sm"
+                      icon={
+                        person.isOwner ? "remove_moderator" : "shield_person"
+                      }
+                      loading={setOwner.isRunning}
+                      disabled={isSelf && person.isOwner}
+                      testId="toggle-owner"
+                    >
+                      {person.isOwner ? "Remove owner role" : "Make owner"}
+                    </Button>
+                  </Form>
+                )}
+              </div>
+              {person.status === "pending" && (
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Signed in and waiting. Activate them and give them a site role
+                  below.
+                </p>
+              )}
+            </section>
+          )}
 
           <hr class={divider()} />
 
@@ -341,12 +549,12 @@ const ManageDialog = component$<{
                 apply if the owner role is removed.
               </p>
             )}
-            {sites.length === 0 && (
+            {!controls.protected && sites.length === 0 && (
               <p class="text-sm text-gray-500 dark:text-gray-400">
                 No active sites.
               </p>
             )}
-            {sites.map((site) => {
+            {editableSites.map((site) => {
               const grant = person.grants.find((g) => g.site === site.key);
               return (
                 <div
@@ -403,7 +611,39 @@ const ManageDialog = component$<{
                 </div>
               );
             })}
+            {otherGrants.length > 0 && (
+              <div class="flex flex-col gap-1" data-testid="other-grants">
+                {editableSites.length > 0 && (
+                  <span class="text-sm text-gray-500 dark:text-gray-400">
+                    Other sites (you can't change these)
+                  </span>
+                )}
+                <span class="flex flex-wrap gap-1">
+                  {otherGrants.map((g) => (
+                    <Badge key={g.site}>
+                      {g.site}: {g.role}
+                    </Badge>
+                  ))}
+                </span>
+              </div>
+            )}
+            {controls.protected && person.grants.length === 0 && (
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                No site roles.
+              </p>
+            )}
           </section>
+
+          {controls.ownerControls && (
+            <>
+              <hr class={divider()} />
+              <PermissionsSection
+                person={person}
+                sites={sites}
+                catalog={catalog}
+              />
+            </>
+          )}
         </div>
       )}
     </Dialog>
@@ -418,7 +658,7 @@ export default component$(() => {
     addKey: 0,
   });
   useContextProvider(StaffPageCtx, page);
-  const { query, rows, sites, error, selfId } = staff.value;
+  const { query, rows, sites, permissions, error, viewer } = staff.value;
   const pending = rows.filter((r) => r.status === "pending").length;
   const person = rows.find((r) => r.id === page.manageId) ?? null;
 
@@ -481,7 +721,8 @@ export default component$(() => {
       <ManageDialog
         person={person}
         sites={sites}
-        isSelf={!!person && person.id === selfId}
+        catalog={permissions}
+        viewer={viewer}
       />
     </div>
   );

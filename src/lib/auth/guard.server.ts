@@ -8,6 +8,7 @@ import { readAuthConfig } from "./config";
 import { ACCESS_DENIED, ACCESS_TOKEN } from "./keys";
 import { loginUrl, returnPathOf } from "./return-to";
 import { clearSession, isFreshSession, readSession } from "./session.server";
+import { mayManageAccess } from "~/features/access/policy";
 import { SESSION, type SessionView } from "./session";
 import { notEnabledReasonOf } from "./sign-in-errors";
 
@@ -38,7 +39,15 @@ async function loadMe(
   );
   if (error) return [error, null];
   if (!res?.data?.staff) return [{ status: 502, message: "bad_me" }, null];
-  const me = { staff: res.data.staff, sites: res.data.sites ?? [] };
+  const me: SessionView = {
+    staff: res.data.staff,
+    sites: res.data.sites ?? [],
+    permissions: res.data.permissions ?? [],
+    canManageAccess: res.data.canManageAccess ?? {
+      all: !!res.data.staff.isOwner,
+      sites: [],
+    },
+  };
   meCache.set(key, me, Date.now() + ME_CACHE_MS);
   return [null, me];
 }
@@ -90,7 +99,7 @@ export const sessionOf = (
 
 /** Why a section refuses the staff member; the section layout renders it in place of the page. */
 export type AccessDenied = {
-  reason: "owner_only" | "no_site_access";
+  reason: "owner_only" | "access_managers_only" | "no_site_access";
   site?: string;
 };
 
@@ -104,9 +113,22 @@ const deny = (ev: Parameters<RequestHandler>[0], denied: AccessDenied) => {
 export const isOwner = (ev: Pick<RequestEventBase, "sharedMap">): boolean =>
   !!sessionOf(ev)?.staff.isOwner;
 
-/** `/access` layout: owners only. */
+/** Owners, and staff holding `access.manage` for any site (oceano-core decides each action again). */
+export const canManageAccess = (
+  ev: Pick<RequestEventBase, "sharedMap">,
+): boolean => {
+  const session = sessionOf(ev);
+  return !!session && mayManageAccess(session);
+};
+
+/** Owner-only pages (the access audit log). */
 export const requireOwner: RequestHandler = async (ev) => {
   if (!sessionOf(ev)?.staff.isOwner) deny(ev, { reason: "owner_only" });
+};
+
+/** `/access` layout: owners and access managers. */
+export const requireAccessManager: RequestHandler = async (ev) => {
+  if (!canManageAccess(ev)) deny(ev, { reason: "access_managers_only" });
 };
 
 /** A site module's layout: staff with a grant on `site` (owners have every active site). */

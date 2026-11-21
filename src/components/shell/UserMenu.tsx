@@ -8,6 +8,7 @@ import {
   MenuItems,
   MenuSeparator,
 } from "~/components/ui";
+import { mayManageAccess } from "~/features/access/policy";
 import type { SessionView } from "~/lib/auth/session";
 
 /** The signed-in staff member; its menu holds "Sign out" (a plain POST form: works without JS). */
@@ -30,7 +31,11 @@ export default component$<{ session: SessionView; compact?: boolean }>(
                 {staff.name || staff.email}
               </span>
               <span class="text-sm text-gray-500 dark:text-gray-400">
-                {staff.isOwner ? "Owner" : "Staff"}
+                {staff.isOwner
+                  ? "Owner"
+                  : mayManageAccess(session)
+                    ? "Access manager"
+                    : "Staff"}
               </span>
             </span>
           )}

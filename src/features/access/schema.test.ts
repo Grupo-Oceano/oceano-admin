@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   auditQuery,
   createStaffInput,
+  permissionBody,
+  permissionInput,
   putGrantInput,
   setOwnerInput,
   sortStaff,
@@ -68,5 +70,26 @@ describe("access schemas", () => {
         row("a", "active"),
       ]).map((r) => `${r.status}:${r.name}`),
     ).toEqual(["pending:z", "active:a", "active:b", "disabled:a"]);
+  });
+
+  it("permission forms use * for every site", () => {
+    expect(
+      permissionInput.safeParse({ id: ID, key: "access.manage", site: "*" })
+        .success,
+    ).toBe(true);
+    expect(
+      permissionInput.safeParse({ id: ID, key: "access.manage", site: "rpn" })
+        .success,
+    ).toBe(true);
+    expect(
+      permissionInput.safeParse({ id: ID, key: "access.manage", site: "**" })
+        .success,
+    ).toBe(false);
+    expect(
+      permissionInput.safeParse({ id: ID, key: "Access Manage", site: "rpn" })
+        .success,
+    ).toBe(false);
+    expect(permissionBody("*")).toEqual({ site: null });
+    expect(permissionBody("rpn")).toEqual({ site: "rpn" });
   });
 });

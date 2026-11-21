@@ -9,6 +9,9 @@ export type StaffStatus = "pending" | "active" | "disabled";
 /** A site the staff member may open, with their role there (owners: every active site, role `owner`). */
 export type SiteAccess = { key: string; name: string; role: string };
 
+/** Where the staff member may manage staff access (`access.manage`). Owners: `all`. Plain staff: nothing. */
+export type ManageScope = { all: boolean; sites: string[] };
+
 export type SessionView = {
   staff: {
     id: string;
@@ -18,4 +21,7 @@ export type SessionView = {
     status: StaffStatus;
   };
   sites: SiteAccess[];
+  /** The staff member's own permission rows (`site` null = every site). */
+  permissions: { key: string; site: string | null }[];
+  canManageAccess: ManageScope;
 };

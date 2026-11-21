@@ -1,6 +1,6 @@
 # Oceano Admin: one panel for every site
 
-Status: **agreed design, being implemented** (2026-11-20). This page is the contract between
+Status: **agreed design, being implemented** (2026-11-20; permissions added 2026-11-21). This page is the contract between
 oceano-admin, oceano-core and each site backend. When the code and this page disagree, fix one
 of them in the same change.
 
@@ -55,7 +55,15 @@ Tables (oceano-core, `prisma-core`, schema `core_<env>`):
   `{admin,moderator}`), `active` bool. Seeded: `rpn` "RockyPoint.net" `{admin,moderator}`.
 - `site_grants`: (`staff_id`, `site_key`) pk, `role` (must be in `sites.roles`), `granted_by`,
   `granted_at`.
-- `access_audit`: append-only log of staff/grant changes (actor, action, target, before/after json).
+- `access_audit`: append-only log of staff/grant/permission changes (actor, action, target,
+  before/after json).
+- `permissions`: catalog, `key` pk, `description`, `scope` (`global` | `site`). Seeded by migration:
+  `access.manage` "Manage staff and their site access", scope `site`. Not editable through the API.
+- `staff_permissions`: `id` uuid, `staff_id` → staff (cascade), `permission_key` → permissions
+  (restrict), `site_key` → sites (cascade), **nullable: null = every site** (or "not applicable" for a
+  `global` permission), `granted_by`, `granted_at`. Unique (`staff_id`, `permission_key`, `site_key`)
+  **NULLS NOT DISTINCT** (Postgres 15+), so there is at most one all-sites row each. Migration
+  `20261121000000_staff_permissions`.
 
 Rules:
 
@@ -70,33 +78,68 @@ Rules:
    sign-in) binds the `oid` on first sign-in.
 4. `disabled` staff get `403 disabled`. Owners can't disable or demote themselves (keeps at least
    one owner).
-5. Every change writes `access_audit`.
+5. Every change writes `access_audit` (`staff.*`, `grant.added|changed|revoked`,
+   `permission.granted|revoked`).
+
+### Permissions: access managers
+
+A staff member holding `access.manage` is an **access manager**. Their scope S = the sites of their
+rows, or every site if they have a null-site row. Code: oceano-core `access.policy.ts`
+(`canManage(actor, action, target, site)`, pure and unit-tested); AccessService applies it to every
+`/admin/*` call (OwnerGuard is no longer used there).
+
+| Action | Owner | Access manager | Plain staff |
+|---|---|---|---|
+| `GET /admin/staff` | all | all rows, all grants and permissions (read) | `owner_only` |
+| `GET /admin/sites` | all | only S | `owner_only` |
+| `POST /admin/staff` (add) | yes | yes | `owner_only` |
+| `PATCH status: active` | yes | only **pending** people (re-enabling a disabled person: `owner_only`) | `owner_only` |
+| `PATCH status: disabled` | yes (not self) | yes | `owner_only` |
+| `PATCH name` / `isOwner` | yes | `owner_only` | `owner_only` |
+| `PUT/DELETE …/grants/:site` | yes | `site` ∈ S, else `outside_scope` | `owner_only` |
+| permissions (list, grant, revoke) | yes | `owner_only` | `owner_only` |
+| `GET /admin/audit` | yes | `owner_only` (simplest option; no filtered view) | `owner_only` |
+
+Every manager action on a person is refused with `protected_staff` when the person is an owner,
+holds `access.manage` (any scope), or is the manager themselves. Activating or disabling a person who
+has a grant on a site outside S is `outside_scope`. Order of checks: not a manager → `owner_only`;
+owner-only action → `owner_only`; protected person → `protected_staff`; scope → `outside_scope`.
+`access.manage` gives **no site access**: site tokens are unchanged, a manager who should use a site
+needs a grant on it. An active manager with no grant can still sign in (`/admin/me` doesn't answer
+`not_enabled` to them) so they can reach `/access`.
 
 ### oceano-core endpoints (Bearer = Entra access token)
 
 | Method + path | Who | Result |
 |---|---|---|
-| `GET /admin/me` | any verified staff | `{ staff: {id,email,name,isOwner,status}, sites: [{key,name,role}] }` (owner: every active site with role `owner`). Pending/disabled → 403 `not_enabled` / `disabled`. Updates `last_sign_in_at`. |
+| `GET /admin/me` | any verified staff | `{ staff: {id,email,name,isOwner,status}, sites: [{key,name,role}], permissions: [{key,site}], canManageAccess: {all,sites} }` (owner: every active site with role `owner`; `canManageAccess` for owners and all-sites managers is `all: true` + every site key, for site managers their keys, else `{all:false,sites:[]}`). Pending/disabled → 403 `not_enabled` / `disabled`. Updates `last_sign_in_at`. |
 | `POST /admin/site-tokens` `{ site }` | staff with a grant on `site` (or owner) | `{ token, expiresAt }`. 403 `no_site_access`. |
-| `GET /admin/sites` | owner | sites with their roles |
-| `GET /admin/staff?status=` | owner | staff with their grants |
-| `POST /admin/staff` `{ email, name }` | owner | pre-enables a person (`active`, no oid yet) |
-| `PATCH /admin/staff/:id` `{ status?, name?, isOwner? }` | owner | activate / disable / promote |
-| `PUT /admin/staff/:id/grants/:site` `{ role }` | owner | grant or change a site role |
-| `DELETE /admin/staff/:id/grants/:site` | owner | revoke |
+| `GET /admin/sites` | owner, manager | sites with their roles (managers: only their scope) |
+| `GET /admin/staff?status=` | owner, manager | staff with their grants and permissions |
+| `POST /admin/staff` `{ email, name }` | owner, manager | pre-enables a person (`active`, no oid yet) |
+| `PATCH /admin/staff/:id` `{ status?, name?, isOwner? }` | owner; manager for status (see table above) | activate / disable / promote |
+| `PUT /admin/staff/:id/grants/:site` `{ role }` | owner; manager on their sites | grant or change a site role |
+| `DELETE /admin/staff/:id/grants/:site` | owner; manager on their sites | revoke |
+| `GET /admin/permissions` | owner | catalog `[{key,description,scope}]` |
+| `PUT /admin/staff/:id/permissions/:key` `{ site: string \| null }` | owner | idempotent upsert of that scope row (`null` = every site); returns `{key,site,grantedBy,grantedAt}` |
+| `DELETE /admin/staff/:id/permissions/:key?site=<key\|*>` | owner | revoke one scope row (`*` = the all-sites row); returns the revoked row |
 | `GET /admin/audit?limit&cursor` | owner | access audit, newest first |
 | `GET /.well-known/jwks.json` | public | public signing keys |
 
 As built (oceano-core `feature/staff-access`): no global prefix. Success bodies are
 `{ message, data }` (data = the payload above); errors are `{ message: "<code>" }` with the HTTP
 status. Extra codes: 401 `missing_token` / `invalid_token`, 403 `identity_conflict` (email owned
-by a row bound to another oid), 403 `owner_only`, 403 `cannot_disable_self` /
+by a row bound to another oid), 403 `owner_only`, 403 `outside_scope` (manager, site outside their
+scope), 403 `protected_staff` (manager acting on an owner, another manager or themselves), 403 `cannot_disable_self` /
 `cannot_demote_self`, 409 `last_owner`, 409 `staff_exists`, 400 `email_domain_not_allowed` /
-`invalid_role`, 404 `staff_not_found` / `site_not_found` / `grant_not_found`, 503
+`invalid_role` / `invalid_permission_scope` (a `global` permission given a site), 404
+`staff_not_found` / `site_not_found` / `grant_not_found` / `permission_not_found` /
+`permission_grant_not_found`, 503
 `site_tokens_unconfigured`. An active non-owner with no grant on an active site also gets 403
 `not_enabled`. `CORE_OWNER_EMAILS` is re-applied on every sign-in (the env list is the master
-switch). Staff list items: `{id,email,name,status,isOwner,entraOid,lastSignInAt,createdAt,updatedAt,grants:[{site,role,grantedBy,grantedAt}]}`;
+switch). Staff list items: `{id,email,name,status,isOwner,entraOid,lastSignInAt,createdAt,updatedAt,grants:[{site,role,grantedBy,grantedAt}],permissions:[{key,site,grantedBy,grantedAt}]}` (`site` null = every site);
 audit page: `{items:[{id,actorId,action,targetType,targetId,before,after,createdAt}], nextCursor}`.
+Audit targets: staff `<staffId>`, grant `<staffId>:<site>`, permission `<staffId>:<key>:<site or *>`.
 
 ## Site tokens (core → site backends)
 
@@ -121,7 +164,8 @@ audit page: `{items:[{id,actorId,action,targetType,targetId,before,after,created
 - `src/lib/backends/`: one client per backend (`core`, `rpn`, …): native `fetch`, base URL from
   env (`CORE_API_URL`, `RPN_API_URL`), Bearer from the session (core) or from a site token (sites).
   `Result<T>` tuples, plain objects only.
-- Routes: `/` sites home (only the sites you have), `/access/*` (owner: staff, grants, audit),
+- Routes: `/` sites home (only the sites you have), `/access/*` (owners and access managers: staff,
+  grants; owners also permissions and audit),
   `/sites/rpn/*` (RockyPoint.net: review queue, request detail, Escapia keying queue), existing
   modules (IoT, leads, infrastructure, backups) under their own sections.
 - A site module's layout guards with `requireSite('rpn')` (no grant → 403 page); actions re-check
@@ -137,7 +181,13 @@ expires 60 s before the token) and `oa_login` (10 min, path `/auth/callback`). T
 10 s per token; a 401 within 2 min of sign-in shows `?error=rejected` instead of looping. The legacy
 modules moved from `/home/*` to `/dashboard`, `/infrastructure`, `/backups`, `/iot`, `/leads`,
 `/ui-test` (old URLs 301) and are visible to **every signed-in staff member** for now (no
-per-module grant yet). `/access` is owners only; `/sites/rpn` needs an `rpn` grant (owners pass).
+per-module grant yet). `/access` is for owners and access managers (`requireAccessManager`, nav and
+home tile from `canManageAccess`); `/access/audit` is owners only. The staff dialog shows each viewer
+only the controls core would accept from them (`src/features/access/policy.ts`, mirroring
+`canManage`): managers get grant rows for their sites only (other sites' roles read-only), the
+status button only when allowed, no owner or permission controls, and protected people read-only;
+owners get a Permissions section to grant/revoke `access.manage` for one site or all sites. Every
+action re-checks in the BFF (owner or manager) and again in core. `/sites/rpn` needs an `rpn` grant (owners pass).
 Setup: [../setup/entra.md](../setup/entra.md).
 
 ## Environment (oceano-admin)

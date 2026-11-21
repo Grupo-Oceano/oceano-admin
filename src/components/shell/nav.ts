@@ -1,3 +1,4 @@
+import { mayManageAccess } from "~/features/access/policy";
 import type { SessionView } from "~/lib/auth/session";
 
 export type NavEntry =
@@ -18,7 +19,7 @@ export const SITE_MODULES: Record<
 };
 
 /**
- * The shell's navigation for a session: the sites the staff member has, Access (owners), then the Oceano
+ * The shell's navigation for a session: the sites the staff member has, Access (owners and access managers), then the Oceano
  * operations modules. Those are visible to everyone signed in for now (no per-module grants yet).
  */
 export function navFor(session: SessionView): NavEntry[] {
@@ -32,7 +33,7 @@ export function navFor(session: SessionView): NavEntry[] {
       icon: SITE_MODULES[s.key].icon,
       href: SITE_MODULES[s.key].href,
     })),
-    ...(session.staff.isOwner
+    ...(mayManageAccess(session)
       ? [
           { type: "separator" as const, label: "Admin" },
           {

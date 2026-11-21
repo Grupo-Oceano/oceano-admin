@@ -1,6 +1,7 @@
 import { component$ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { SITE_MODULES } from "~/components/shell/nav";
+import { mayManageAccess } from "~/features/access/policy";
 import { Badge, card, heading } from "~/components/ui";
 import { useSession } from "./layout";
 
@@ -19,6 +20,7 @@ const tile =
 export default component$(() => {
   const session = useSession();
   const { staff, sites } = session.value;
+  const manager = mayManageAccess(session.value);
   return (
     <div class="flex flex-col gap-8">
       <header class="flex flex-col gap-1 px-1">
@@ -28,7 +30,9 @@ export default component$(() => {
         <p class="text-sm text-gray-500 dark:text-gray-400">
           {staff.isOwner
             ? "Owner: you can open every site and manage access."
-            : "Your sites"}
+            : manager
+              ? "Your sites. You can also manage staff access."
+              : "Your sites"}
         </p>
       </header>
 
@@ -102,7 +106,7 @@ export default component$(() => {
               </Link>
             </li>
           ))}
-          {staff.isOwner && (
+          {manager && (
             <li class={card()}>
               <Link href="/access/" class={[tile, "items-center"]}>
                 <span

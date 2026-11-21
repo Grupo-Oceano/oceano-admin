@@ -8,7 +8,7 @@ import {
   type AuditPage,
   type StaffMember,
 } from "~/features/access/schema";
-import { isOwner } from "~/lib/auth/guard.server";
+import { isOwner, requireOwner } from "~/lib/auth/guard.server";
 import { coreApi } from "~/lib/backends/core.server";
 import type { ApiResponse } from "~/lib/backends/types";
 import { loaderResult } from "~/lib/backends/unwrap.server";
@@ -23,6 +23,9 @@ const compact = (value: unknown): string => {
   const json = JSON.stringify(value);
   return json.length > 160 ? `${json.slice(0, 157)}…` : json;
 };
+
+/** Owners only (access managers get the layout's 403 page here). */
+export const onRequest = requireOwner;
 
 /** Access audit, newest first, keyset-paged by `cursor` (oceano-core `GET /admin/audit`). Owners only. */
 export const useAudit = routeLoader$(
@@ -44,12 +47,18 @@ export const useAudit = routeLoader$(
     const nameOf = (id: string | null) =>
       id ? (people.get(id) ?? id) : "system";
     const rows: AuditRow[] = (page.data?.data.items ?? []).map((item) => {
-      // Grant targets are `<staffId>:<site>`.
-      const [staffId, site] = item.targetId.split(":");
+      // Grant targets are `<staffId>:<site>`; permission targets `<staffId>:<key>:<site or *>`.
+      const [staffId, a, b] = item.targetId.split(":");
+      const target =
+        b !== undefined
+          ? `${nameOf(staffId)}: ${a} on ${b === "*" ? "all sites" : b}`
+          : a
+            ? `${nameOf(staffId)} on ${a}`
+            : nameOf(item.targetId);
       return {
         ...item,
         actor: nameOf(item.actorId),
-        target: site ? `${nameOf(staffId)} on ${site}` : nameOf(item.targetId),
+        target,
         change: [compact(item.before), compact(item.after)]
           .filter(Boolean)
           .join(" → "),

@@ -17,8 +17,10 @@ export default component$<{ denied: AccessDenied; siteName?: string }>(
         role="alert"
       >
         {denied.reason === "owner_only"
-          ? "Access management is for owners only."
-          : `Your account has no role on ${siteName ?? denied.site ?? "this site"}.`}{" "}
+          ? "This page is for owners only."
+          : denied.reason === "access_managers_only"
+            ? "Access management is for owners and access managers."
+            : `Your account has no role on ${siteName ?? denied.site ?? "this site"}.`}{" "}
         Ask an owner ({OWNER_CONTACT}) if you need it.
       </Alert>
       <a href="/" class={button({ intent: "secondary", class: "self-start" })}>

@@ -18,6 +18,9 @@ const Person = component$<{ row: StaffMember }>(({ row }) => (
     <span class="flex flex-wrap items-center gap-2 font-medium">
       {row.name || "(no name)"}
       {row.isOwner && <Badge tone="info">Owner</Badge>}
+      {(row.permissions ?? []).length > 0 && (
+        <Badge tone="info">Access manager</Badge>
+      )}
     </span>
     <span class="text-sm text-gray-500 dark:text-gray-400">{row.email}</span>
   </div>

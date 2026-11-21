@@ -1,12 +1,13 @@
 import { component$, Slot } from "@qwik.dev/core";
 import { routeLoader$ } from "@qwik.dev/router";
+import { useSession } from "../layout";
 import Forbidden from "~/components/shell/Forbidden";
 import NavLink from "~/components/shell/NavLink";
 import { heading } from "~/components/ui";
-import { accessDeniedOf, requireOwner } from "~/lib/auth/guard.server";
+import { accessDeniedOf, requireAccessManager } from "~/lib/auth/guard.server";
 
-/** Owners only: anyone else gets a 403 page here (and every action re-checks). */
-export const onRequest = requireOwner;
+/** Owners and access managers: anyone else gets a 403 page here (and every action re-checks). */
+export const onRequest = requireAccessManager;
 
 export const useAccessDenied = routeLoader$((ev) => accessDeniedOf(ev));
 
@@ -16,7 +17,9 @@ const activeTab = "bg-surface text-gray-900 shadow-sm dark:text-white";
 
 export default component$(() => {
   const denied = useAccessDenied();
+  const session = useSession();
   if (denied.value) return <Forbidden denied={denied.value} />;
+  const owner = session.value.staff.isOwner;
   return (
     <div class="flex flex-col gap-4">
       <header class="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
@@ -33,9 +36,11 @@ export default component$(() => {
           <NavLink href="/access/" class={tab} activeClass={activeTab}>
             Staff
           </NavLink>
-          <NavLink href="/access/audit/" class={tab} activeClass={activeTab}>
-            Audit log
-          </NavLink>
+          {owner && (
+            <NavLink href="/access/audit/" class={tab} activeClass={activeTab}>
+              Audit log
+            </NavLink>
+          )}
         </nav>
       </header>
       <Slot />

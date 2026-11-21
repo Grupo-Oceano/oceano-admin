@@ -8,12 +8,17 @@ import type { SessionView } from "~/lib/auth/session";
 /** Every signed-in route: Entra session → oceano-core `/admin/me` (lib/auth/guard.server.ts). */
 export const onRequest = requireStaff;
 
-/** `{ staff, sites }` from oceano-core. Never the token: that stays in server memory. */
+/** `{ staff, sites, permissions, canManageAccess }` from oceano-core. Never the token: that stays in server memory. */
 export const useSession = routeLoader$((ev): SessionView => {
   const session = sessionOf(ev);
   // The guard always sets it; without one there is nothing safe to render.
   if (!session) throw ev.redirect(302, "/auth/login/");
-  return { staff: session.staff, sites: session.sites };
+  return {
+    staff: session.staff,
+    sites: session.sites,
+    permissions: session.permissions,
+    canManageAccess: session.canManageAccess,
+  };
 });
 
 export default component$(() => {
