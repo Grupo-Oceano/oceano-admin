@@ -3,7 +3,7 @@ import type { ApiError, Result } from "./types";
 type Query = Record<string, string | number | boolean | null | undefined>;
 
 export type BackendOptions = {
-  /** Absolute base URL, e.g. `ev.env.get('API_URL')`. Empty = not configured (every call returns 503). */
+  /** Absolute base URL, e.g. `ev.env.get('CORE_API_URL')`. Empty = not configured (every call returns 503). */
   baseUrl: string | undefined;
   /** Env var that holds `baseUrl`, for the "not configured" message. */
   envName: string;

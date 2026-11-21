@@ -23,6 +23,7 @@ export { Input, input } from "./forms/input";
 export { Select } from "./forms/select";
 
 export { Alert, alert, ErrorState, type Tone } from "./feedback/alert";
+export { Badge, badge } from "./feedback/badge";
 export { Skeleton } from "./feedback/skeleton";
 export { ToastProvider, useToast, type ToastSeverity } from "./feedback/toast";
 

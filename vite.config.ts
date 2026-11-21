@@ -32,9 +32,10 @@ function stripGroupIncludeDependenciesRecursively(): Plugin {
 }
 
 export default defineConfig(({ mode }): UserConfig => {
-  // Dev only: in production nginx serves /backbone/api and /socket.io (nginx.conf).
+  // Dev only: in production nginx proxies /socket.io to oceano-core (nginx.conf). The app calls oceano-core
+  // server side (CORE_API_URL); only the browser's Socket.IO connections go through this proxy.
   const env = loadEnv(mode, process.cwd(), "");
-  const apiTarget = env.API_URL || "http://localhost:3000";
+  const coreTarget = env.CORE_API_URL || "http://localhost:3000";
 
   return {
     plugins: [
@@ -52,15 +53,9 @@ export default defineConfig(({ mode }): UserConfig => {
         "Cache-Control": "public, max-age=0",
       },
       proxy: {
-        // Same paths nginx proxies in production, so browser code can keep using them.
-        "/backbone/api": {
-          target: apiTarget,
-          rewrite: (path) => path.replace(/^\/backbone\/api/, ""),
-          changeOrigin: true,
-          secure: false,
-        },
+        // Same path nginx proxies in production (lib/realtime/socket.ts connects same-origin).
         "/socket.io": {
-          target: apiTarget,
+          target: coreTarget,
           ws: true,
           changeOrigin: true,
         },

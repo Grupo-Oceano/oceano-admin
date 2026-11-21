@@ -11,6 +11,7 @@ import ThemeToggle from "~/components/shell/ThemeToggle";
 import {
   Alert,
   Avatar,
+  Badge,
   Button,
   button,
   CloseButton,
@@ -162,6 +163,13 @@ export default component$(() => {
       <section>
         <h2 class={section}>Feedback</h2>
         <div class="flex flex-col gap-4">
+          <div class="flex flex-wrap gap-2" data-testid="badges">
+            <Badge tone="warning">Pending</Badge>
+            <Badge tone="success" icon="check">Active</Badge>
+            <Badge tone="danger">Disabled</Badge>
+            <Badge tone="info">Owner</Badge>
+            <Badge>moderator</Badge>
+          </div>
           <Alert tone="info" icon="info" title="Heads up">
             An informational message.
           </Alert>
@@ -252,14 +260,14 @@ export default component$(() => {
         <div class="flex flex-wrap items-center gap-4">
           <ThemeToggle />
           <NavLink
-            href="/home/dashboard"
+            href="/dashboard/"
             class="text-sky-600 dark:text-sky-400"
             activeClass="font-bold"
           >
             Dashboard
           </NavLink>
           <NavLink
-            href="/home/ui-test"
+            href="/ui-test/"
             class="text-sky-600 dark:text-sky-400"
             activeClass="font-bold"
           >

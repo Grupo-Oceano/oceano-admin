@@ -1,33 +1,14 @@
 import { component$ } from "@qwik.dev/core";
 import { card, heading } from "~/components/ui";
-import type { SessionUser } from "~/lib/auth/session";
+import type { SessionView } from "~/lib/auth/session";
+import { navFor } from "./nav";
 import NavLink from "./NavLink";
 import UserMenu from "./UserMenu";
 
-type MenuEntry =
-  | { type: "separator"; label: string }
-  | { type: "item"; label: string; icon: string; href: string };
-
-const menu: MenuEntry[] = [
-  { type: "separator", label: "Main" },
-  {
-    type: "item",
-    label: "Dashboard",
-    icon: "dashboard",
-    href: "/home/dashboard",
-  },
-  { type: "separator", label: "Server" },
-  { type: "item", label: "Infra", icon: "lan", href: "/home/infrastructure" },
-  { type: "item", label: "Backups", icon: "backup", href: "/home/backups" },
-  { type: "separator", label: "Etc" },
-  { type: "item", label: "IoT", icon: "door_sensor", href: "/home/iot" },
-  { type: "item", label: "Leads", icon: "patient_list", href: "/home/leads" },
-  { type: "item", label: "UI", icon: "labs", href: "/home/ui-test" },
-];
-
-export default component$<{ user: SessionUser | null }>(({ user }) => (
+/** Desktop navigation (lg and up); phones use the menu in `Uppernav`. */
+export default component$<{ session: SessionView }>(({ session }) => (
   <div class={card({ tone: "panel", class: "flex h-full flex-col gap-4" })}>
-    <a class="flex flex-row gap-1" href="/home">
+    <a class="flex flex-row gap-1" href="/">
       <img
         src="/favicon.png"
         alt=""
@@ -40,20 +21,11 @@ export default component$<{ user: SessionUser | null }>(({ user }) => (
       </h6>
     </a>
 
-    <div class="flex w-full flex-row items-center gap-2">
-      <hr class="w-full border-gray-300 opacity-75 dark:border-gray-600" />
-      <small class="text-gray-500 dark:text-gray-300">Home</small>
-      <hr class="w-full border-gray-300 opacity-75 dark:border-gray-600" />
-    </div>
-
-    <nav class="flex min-h-0 w-full flex-1 flex-col justify-between">
+    <nav class="flex min-h-0 w-full flex-1 flex-col justify-between gap-4">
       <div class="flex w-full flex-col overflow-y-auto">
-        {menu.map((item) =>
+        {navFor(session).map((item) =>
           item.type === "separator" ? (
-            <p
-              key={item.label}
-              class={heading({ level: "group", class: "m-2 opacity-60" })}
-            >
+            <p key={item.label} class={heading({ level: "group", class: "m-2 opacity-60" })}>
               {item.label}
             </p>
           ) : (
@@ -61,18 +33,18 @@ export default component$<{ user: SessionUser | null }>(({ user }) => (
               key={item.href}
               href={item.href}
               activeClass="bg-gray-200 text-sky-600 dark:bg-gray-600 dark:text-sky-400"
-              class="mb-3 flex flex-row items-center gap-3 rounded-md p-2 font-semibold text-gray-600 transition-colors hover:bg-gray-200 hover:text-sky-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-sky-400 pointer-coarse:min-h-11"
+              class="mb-1 flex flex-row items-center gap-3 rounded-md p-2 font-semibold text-gray-600 transition-colors hover:bg-gray-200 hover:text-sky-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-sky-400 pointer-coarse:min-h-11"
             >
               <span class="material-symbols-rounded text-lg" aria-hidden="true">
                 {item.icon}
               </span>
-              <span class="text-lg">{item.label}</span>
+              <span>{item.label}</span>
             </NavLink>
           ),
         )}
       </div>
 
-      <UserMenu user={user} />
+      <UserMenu session={session} />
     </nav>
   </div>
 ));

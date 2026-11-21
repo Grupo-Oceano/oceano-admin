@@ -20,15 +20,15 @@ RUN pnpm run build
 ##### FINAL STAGE #####
 FROM base AS final
 ENV NODE_ENV=production
-# Runtime env: API_URL (oceano-core base URL). Set ORIGIN (e.g. https://admin.oceanorentals.net) once the
-# node server's origin check is turned back on (src/entry.node-server.tsx).
+# Runtime env (server only, see .env.example): PUBLIC_ORIGIN, ENTRA_TENANT_ID, ENTRA_CLIENT_ID,
+# ENTRA_CLIENT_SECRET, ENTRA_API_SCOPE, ADMIN_SESSION_SECRET, CORE_API_URL, RPN_API_URL.
 COPY --from=build /app/dist /app/dist
 COPY --from=build /app/server /app/server
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --prod --frozen-lockfile --prefer-offline
 
-# nginx in front of the Qwik server (port 3000), proxies /backbone/api and /socket.io to oceano-core
+# nginx in front of the Qwik server (port 3000), proxies /socket.io to oceano-core
 RUN apk add --no-cache nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 

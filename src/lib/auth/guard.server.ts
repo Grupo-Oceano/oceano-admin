@@ -1,50 +1,121 @@
-import type { RequestHandler } from "@qwik.dev/router";
-import type { ApiResponse } from "../backends/types";
+import type { RequestEventBase, RequestHandler } from "@qwik.dev/router";
+import { createHash } from "node:crypto";
 import { coreApi } from "../backends/core.server";
-import { AUTH_COOKIE } from "./cookies";
-import { SESSION_USER, type SessionUser } from "./session";
+import { siteTokens } from "../backends/site-token.server";
+import type { ApiResponse, Result } from "../backends/types";
+import { TtlCache } from "../ttl-cache";
+import { readAuthConfig } from "./config";
+import { ACCESS_DENIED, ACCESS_TOKEN } from "./keys";
+import { loginUrl, returnPathOf } from "./return-to";
+import { clearSession, isFreshSession, readSession } from "./session.server";
+import { SESSION, type SessionView } from "./session";
+import { notEnabledReasonOf } from "./sign-in-errors";
 
-/** Valid tokens are re-checked against oceano-core at most every 5 minutes per server process. */
-const CACHE_MS = 5 * 60 * 1000;
-const authCache = new Map<string, { user: SessionUser | null; at: number }>();
+/** `GET /admin/me` results per token, for a few seconds: one page load runs the guard several times. */
+const ME_CACHE_MS = 10_000;
+const meCache = new TtlCache<SessionView>(500);
 
-export const clearAuthCache = (token?: string) =>
-  token ? authCache.delete(token) : authCache.clear();
+const tokenKey = (token: string) =>
+  createHash("sha256").update(token).digest("base64url");
 
-const isAuthPage = (path: string) =>
-  path.startsWith("/login") || path.startsWith("/register");
+/** Forgets everything cached for a token (sign-out). */
+export function forgetToken(token: string): void {
+  const key = tokenKey(token);
+  const me = meCache.get(key);
+  if (me) siteTokens.delete(me.staff.id);
+  meCache.delete(key);
+}
 
-async function userFor(
+async function loadMe(
+  ev: Pick<RequestEventBase, "env" | "sharedMap">,
   token: string,
-  ev: Parameters<RequestHandler>[0],
-): Promise<SessionUser | null> {
-  const cached = authCache.get(token);
-  if (cached && Date.now() - cached.at < CACHE_MS) return cached.user;
-  const [error, res] = await coreApi(ev).post<
-    ApiResponse<{ username: string }>
-  >("/auth/check-token", { token });
-  const user =
-    !error && res?.data?.username ? { username: res.data.username } : null;
-  authCache.set(token, { user, at: Date.now() });
-  return user;
+): Promise<Result<SessionView>> {
+  const key = tokenKey(token);
+  const cached = meCache.get(key);
+  if (cached) return [null, cached];
+  const [error, res] = await coreApi(ev, token).get<ApiResponse<SessionView>>(
+    "/admin/me",
+  );
+  if (error) return [error, null];
+  if (!res?.data?.staff) return [{ status: 502, message: "bad_me" }, null];
+  const me = { staff: res.data.staff, sites: res.data.sites ?? [] };
+  meCache.set(key, me, Date.now() + ME_CACHE_MS);
+  return [null, me];
 }
 
 /**
- * Root `onRequest`: the legacy username/password session (until Entra replaces it).
- * Signed in → `/` and `/login` go to `/home`, the user lands in `sharedMap`. Signed out → everything but
- * `/login` goes to `/login`.
+ * `onRequest` of every signed-in layout (`routes/(app)/layout*.tsx`). Sign-in not configured → the sign-in
+ * page explains it (never allows). No or expired session → Entra sign-in, back to this page. Then oceano-core
+ * decides: `GET /admin/me` with the Entra Bearer → `{ staff, sites }` in `sharedMap[SESSION]` and the token in
+ * `sharedMap[ACCESS_TOKEN]` (server only). 401 → sign in again (unless the session is brand new: then the
+ * setup is wrong and another sign-in would loop); 403 not_enabled/disabled/identity_conflict → an explanation
+ * page; anything else → "access service unavailable".
  */
-export const authGuard: RequestHandler = async (ev) => {
-  const path = ev.url.pathname;
-  const token = ev.cookie.get(AUTH_COOKIE)?.value;
-  const user = token ? await userFor(token, ev) : null;
+export const requireStaff: RequestHandler = async (ev) => {
+  ev.headers.set("Cache-Control", "private, no-store");
+  const config = readAuthConfig((name) => ev.env.get(name));
+  if (!config) throw ev.redirect(302, "/auth/sign-in/");
 
-  if (user) {
-    ev.sharedMap.set(SESSION_USER, user);
-    ev.headers.set("Cache-Control", "private, no-store");
-    if (path === "/" || isAuthPage(path)) throw ev.redirect(302, "/home");
-    return;
+  const returnTo = returnPathOf(ev.url);
+  const session = await readSession(ev.cookie, config.sessionSecret);
+  if (!session) throw ev.redirect(302, loginUrl(returnTo));
+
+  const [error, me] = await loadMe(ev, session.accessToken);
+  if (error) {
+    if (error.status === 401) {
+      clearSession(ev.cookie);
+      if (isFreshSession(session))
+        throw ev.redirect(302, "/auth/sign-in/?error=rejected");
+      throw ev.redirect(302, loginUrl(returnTo));
+    }
+    const reason = error.status === 403 ? notEnabledReasonOf(error.message) : null;
+    if (reason) throw ev.redirect(302, `/auth/not-enabled/?reason=${reason}`);
+    console.warn(`[auth] /admin/me failed: ${error.status} ${error.message}`);
+    throw ev.redirect(
+      302,
+      `/auth/sign-in/?error=unavailable&returnTo=${encodeURIComponent(returnTo)}`,
+    );
   }
-  if (isAuthPage(path)) return;
-  throw ev.redirect(302, "/login");
+
+  ev.sharedMap.set(ACCESS_TOKEN, session.accessToken);
+  ev.sharedMap.set(SESSION, me);
 };
+
+/** The session the guard resolved (every `(app)` route has one). */
+export const sessionOf = (
+  ev: Pick<RequestEventBase, "sharedMap">,
+): SessionView | null =>
+  (ev.sharedMap.get(SESSION) as SessionView | undefined) ?? null;
+
+/** Why a section refuses the staff member; the section layout renders it in place of the page. */
+export type AccessDenied = { reason: "owner_only" | "no_site_access"; site?: string };
+
+const deny = (ev: Parameters<RequestHandler>[0], denied: AccessDenied) => {
+  ev.sharedMap.set(ACCESS_DENIED, denied);
+  // Document requests answer 403; the router's own JSON requests keep their status so SPA navigation works.
+  if (!ev.internalRequest) ev.status(403);
+};
+
+/** `/access` layout: owners only. */
+export const requireOwner: RequestHandler = async (ev) => {
+  if (!sessionOf(ev)?.staff.isOwner) deny(ev, { reason: "owner_only" });
+};
+
+/** A site module's layout: staff with a grant on `site` (owners have every active site). */
+export const requireSite =
+  (site: string): RequestHandler =>
+  async (ev) => {
+    if (!siteRoleOf(ev, site)) deny(ev, { reason: "no_site_access", site });
+  };
+
+export const accessDeniedOf = (
+  ev: Pick<RequestEventBase, "sharedMap">,
+): AccessDenied | null =>
+  (ev.sharedMap.get(ACCESS_DENIED) as AccessDenied | undefined) ?? null;
+
+/** The staff member's role on `site` (`owner` for owners), or null. */
+export const siteRoleOf = (
+  ev: Pick<RequestEventBase, "sharedMap">,
+  site: string,
+): string | null =>
+  sessionOf(ev)?.sites.find((s) => s.key === site)?.role ?? null;

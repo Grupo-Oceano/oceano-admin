@@ -79,7 +79,7 @@ export default component$(() => {
         </small>
         {/* An endpoint streams the CSV from oceano-core, so the download works without JS. */}
         <a
-          href="/home/leads/download"
+          href="/leads/download"
           download
           class={button({ intent: "success" })}
           data-testid="leads-export"

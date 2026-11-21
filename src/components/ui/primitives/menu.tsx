@@ -27,9 +27,9 @@ const ITEM = '[role="menuitem"]';
  * <Menu>
  *   <MenuButton class={button({ intent: 'ghost' })}>Options</MenuButton>
  *   <MenuItems anchor="bottom end">
- *     <MenuItem href="/home/dashboard">Dashboard</MenuItem>
+ *     <MenuItem href="/dashboard/">Dashboard</MenuItem>
  *     <MenuSeparator />
- *     <form method="post" action="/logout"><MenuItem type="submit">Log out</MenuItem></form>
+ *     <form method="post" action="/auth/logout"><MenuItem type="submit">Sign out</MenuItem></form>
  *   </MenuItems>
  * </Menu>
  * ```

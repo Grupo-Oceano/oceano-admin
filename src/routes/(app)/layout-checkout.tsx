@@ -2,6 +2,10 @@ import { component$, Slot } from "@qwik.dev/core";
 import { useNavigate } from "@qwik.dev/router";
 import ThemeToggle from "~/components/shell/ThemeToggle";
 import { Button } from "~/components/ui";
+import { requireStaff } from "~/lib/auth/guard.server";
+
+// A named layout replaces `layout.tsx`, so it repeats the guard.
+export const onRequest = requireStaff;
 
 /** Full-width layout for `index@checkout` pages: a header with "Back" and the theme toggle, no sidebar. */
 export default component$(() => {
