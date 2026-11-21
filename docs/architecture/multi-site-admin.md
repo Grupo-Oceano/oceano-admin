@@ -1,0 +1,149 @@
+# Oceano Admin: one panel for every site
+
+Status: **agreed design, being implemented** (2026-11-20). This page is the contract between
+oceano-admin, oceano-core and each site backend. When the code and this page disagree, fix one
+of them in the same change.
+
+## Goal
+
+Oceano staff manage every site (RockyPoint.net businesses, later blogs and other sites) from a
+single app, **admin.oceanorentals.net**, signing in with their Microsoft work account
+(`@gooceano.com`). **chuck@gooceano.com** is the master (owner) account. From it, other staff are
+enabled and given access to specific sites with a role per site.
+
+## Pieces
+
+| Piece | Domain | Role |
+|-------|--------|------|
+| **oceano-admin** (this repo, Qwik v2, node adapter) | `admin.oceanorentals.net` | The UI and a **BFF**: signs staff in with Entra, keeps tokens server side, calls the backends server to server. No token ever reaches the browser. |
+| **oceano-core** (`Grupo-Oceano/oceano-core`, app `oceano-core`) | `services.oceanorentals.net` | **Primary backend + identity and access authority**: staff directory, owner flag, per-site grants, and the issuer of short-lived **site tokens** (JWKS published). Also its existing modules (IoT, captive portal, guests). |
+| **Site backends** (first: RockyPoint.net API, repo `rockypoint-net`, `apps/api`) | each site's API subdomain, e.g. `api-staging.rockypoint.net` | Own their data and their admin endpoints. They **trust oceano-core site tokens** for staff calls; they no longer talk to Entra. |
+
+```
+Browser ── admin.oceanorentals.net (Qwik BFF) ──┬─ Entra (gooceano tenant): auth code + PKCE
+                                                ├─ oceano-core  (Bearer: Entra access token)
+                                                │     /admin/me, /admin/site-tokens, /admin/staff…
+                                                └─ site API     (Bearer: core site token, aud site:<key>)
+                                                      e.g. RPN /api/v1/admin/*
+site API ── verifies site token with oceano-core JWKS (cached) ── services.oceanorentals.net/.well-known/jwks.json
+```
+
+## Authentication (who you are): Entra
+
+- One app registration **"Oceano Admin"** in the `gooceano.com` tenant, single tenant.
+  - Web platform redirect URI `https://admin.oceanorentals.net/auth/callback` (plus local
+    `http://localhost:5173/auth/callback`). Post-logout redirect `https://admin.oceanorentals.net/auth/signed-out`.
+  - Exposes the scope `api://<client-id>/access_as_user` (admins consent), `accessTokenAcceptedVersion: 2`.
+  - Delegated permission to its own scope, admin consent granted. Client secret for the BFF.
+- The BFF does auth code + PKCE server side (`@azure/msal-node`), asks for `ENTRA_API_SCOPE`, and
+  keeps the **access token** in an encrypted httpOnly cookie (JWE dir/A256GCM, key = HKDF of
+  `ADMIN_SESSION_SECRET`). When it expires (~60–90 min) the BFF sends the user through sign-in again
+  (silent when the Microsoft session is alive). The same scheme already runs in the RPN web
+  (`rockypoint-net/apps/web/src/lib/staff-auth/`); port it, don't reinvent it.
+- **oceano-core** verifies the Entra access token (jose `createRemoteJWKSet`, RS256, issuers v1/v2 of
+  the tenant, `aud` ∈ `ENTRA_API_AUDIENCE`, `tid` = tenant, `scp` ∋ `access_as_user`). Identity
+  is the token's **`oid`**. Unconfigured → 503 `staff_auth_unconfigured`; never falls back to allow.
+
+## Authorization (what you may do): oceano-core
+
+Tables (oceano-core, `prisma-core`, schema `core_<env>`):
+
+- `staff`: `id` uuid, `entra_oid` unique nullable (bound on first sign-in), `email` unique
+  (lowercase), `name`, `status` (`pending` | `active` | `disabled`), `is_owner` bool, timestamps,
+  `last_sign_in_at`.
+- `sites`: `key` (pk, slug: `rpn`, …), `name`, `roles` text[] (allowed role names, e.g.
+  `{admin,moderator}`), `active` bool. Seeded: `rpn` "RockyPoint.net" `{admin,moderator}`.
+- `site_grants`: (`staff_id`, `site_key`) pk, `role` (must be in `sites.roles`), `granted_by`,
+  `granted_at`.
+- `access_audit`: append-only log of staff/grant changes (actor, action, target, before/after json).
+
+Rules:
+
+1. **Master/owner bootstrap**: `CORE_OWNER_EMAILS` (default `chuck@gooceano.com`). A verified
+   sign-in whose email (`preferred_username`/`upn`/`email`, lowercased, must end in an allowed
+   domain from `CORE_STAFF_EMAIL_DOMAINS`, default `gooceano.com`) is listed becomes `active` +
+   `is_owner` and gets its `entra_oid` bound. Owners see and manage every site.
+2. **Anyone else** in the tenant who signs in gets a `pending` row (so the owner sees the request)
+   and `403 not_enabled` until an owner activates them and grants at least one site.
+3. A row already bound to an `oid` only matches that `oid` (an email reassigned in Entra can't
+   take over an account). A pre-created row (owner enabled `ana@gooceano.com` before her first
+   sign-in) binds the `oid` on first sign-in.
+4. `disabled` staff get `403 disabled`. Owners can't disable or demote themselves (keeps at least
+   one owner).
+5. Every change writes `access_audit`.
+
+### oceano-core endpoints (Bearer = Entra access token)
+
+| Method + path | Who | Result |
+|---|---|---|
+| `GET /admin/me` | any verified staff | `{ staff: {id,email,name,isOwner,status}, sites: [{key,name,role}] }` (owner: every active site with role `owner`). Pending/disabled → 403 `not_enabled` / `disabled`. Updates `last_sign_in_at`. |
+| `POST /admin/site-tokens` `{ site }` | staff with a grant on `site` (or owner) | `{ token, expiresAt }`. 403 `no_site_access`. |
+| `GET /admin/sites` | owner | sites with their roles |
+| `GET /admin/staff?status=` | owner | staff with their grants |
+| `POST /admin/staff` `{ email, name }` | owner | pre-enables a person (`active`, no oid yet) |
+| `PATCH /admin/staff/:id` `{ status?, name?, isOwner? }` | owner | activate / disable / promote |
+| `PUT /admin/staff/:id/grants/:site` `{ role }` | owner | grant or change a site role |
+| `DELETE /admin/staff/:id/grants/:site` | owner | revoke |
+| `GET /admin/audit?limit&cursor` | owner | access audit, newest first |
+| `GET /.well-known/jwks.json` | public | public signing keys |
+
+As built (oceano-core `feature/staff-access`): no global prefix. Success bodies are
+`{ message, data }` (data = the payload above); errors are `{ message: "<code>" }` with the HTTP
+status. Extra codes: 401 `missing_token` / `invalid_token`, 403 `identity_conflict` (email owned
+by a row bound to another oid), 403 `owner_only`, 403 `cannot_disable_self` /
+`cannot_demote_self`, 409 `last_owner`, 409 `staff_exists`, 400 `email_domain_not_allowed` /
+`invalid_role`, 404 `staff_not_found` / `site_not_found` / `grant_not_found`, 503
+`site_tokens_unconfigured`. An active non-owner with no grant on an active site also gets 403
+`not_enabled`. `CORE_OWNER_EMAILS` is re-applied on every sign-in (the env list is the master
+switch). Staff list items: `{id,email,name,status,isOwner,entraOid,lastSignInAt,createdAt,updatedAt,grants:[{site,role,grantedBy,grantedAt}]}`;
+audit page: `{items:[{id,actorId,action,targetType,targetId,before,after,createdAt}], nextCursor}`.
+
+## Site tokens (core → site backends)
+
+- JWT, **ES256**, header `kid`. Private key: `CORE_SIGNING_KEY` (PKCS8 PEM, env, secret);
+  `CORE_SIGNING_KID`. Optional `CORE_SIGNING_PREVIOUS_PUBLIC_KEY` + kid stay in the JWKS during a
+  rotation.
+- Claims: `iss` = `CORE_TOKEN_ISSUER` (`https://services.oceanorentals.net`), `aud` = `site:<key>`
+  (e.g. `site:rpn`), `sub` = core staff id, `oid`, `email`, `name`, `site`, `role` (the site
+  role; owners get the site's highest role, the first entry of `sites.roles`, e.g. `admin`),
+  `owner` bool, `iat`, `exp` = 10 minutes, `jti`.
+- A site backend verifies with `createRemoteJWKSet(<core>/.well-known/jwks.json)`, checks `iss`,
+  `aud`, `site`, and maps `role` to its own permissions. It may keep a local staff row keyed on
+  `oid` (RPN does, for reviewer history), **upserted from the token**: authorization is core's.
+  Revocation lag = token lifetime (≤ 10 min).
+- The BFF caches site tokens in server memory per (staff, site) until 60 s before `exp`.
+
+## oceano-admin structure
+
+- Qwik v2 (`@qwik.dev/core` / `@qwik.dev/router`), node adapter, Tailwind 4, `tailwind-variants`.
+  Skills in `.claude/skills/qwik-v2-*` are the coding contract.
+- `src/lib/auth/`: Entra BFF (login, callback, logout, session cookie), `requireStaff` guard.
+- `src/lib/backends/`: one client per backend (`core`, `rpn`, …): native `fetch`, base URL from
+  env (`CORE_API_URL`, `RPN_API_URL`), Bearer from the session (core) or from a site token (sites).
+  `Result<T>` tuples, plain objects only.
+- Routes: `/` sites home (only the sites you have), `/access/*` (owner: staff, grants, audit),
+  `/sites/rpn/*` (RockyPoint.net: review queue, request detail, Escapia keying queue), existing
+  modules (IoT, leads, infrastructure, backups) under their own sections.
+- A site module's layout guards with `requireSite('rpn')` (no grant → 403 page); actions re-check
+  server side. The site backend checks again: the BFF is not the security boundary.
+
+## Environment (oceano-admin)
+
+| Variable | Value |
+|---|---|
+| `PUBLIC_ORIGIN` | `https://admin.oceanorentals.net` (runtime; builds redirect URIs, Secure cookies) |
+| `ENTRA_TENANT_ID` | gooceano tenant id |
+| `ENTRA_CLIENT_ID` / `ENTRA_CLIENT_SECRET` | "Oceano Admin" registration (secret) |
+| `ENTRA_API_SCOPE` | `api://<client-id>/access_as_user` |
+| `ADMIN_SESSION_SECRET` | 32+ random bytes (secret) |
+| `CORE_API_URL` | `https://services.oceanorentals.net` |
+| `RPN_API_URL` | `https://api-staging.rockypoint.net/api/v1` (staging) |
+
+## Migration of the RockyPoint.net staff panel
+
+The RPN web's `/manage/admin` panel and its Entra sign-in (`apps/web/app/api/auth/entra/*`,
+`src/lib/staff-auth/*`, `app/[locale]/manage/admin`, `app/[locale]/auth/staff`) move here as the
+`/sites/rpn` module and are then deleted from the RPN web. The RPN API keeps its admin endpoints;
+its `StaffGuard` switches from Entra tokens to core site tokens (`aud site:rpn`), upserting
+`staff` by `msal_id = oid`. The RPN Entra env vars are replaced by `CORE_JWKS_URL` /
+`CORE_TOKEN_ISSUER`.
