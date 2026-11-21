@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_RETURN_TO, loginUrl, returnPathOf, sanitizeReturnTo } from "./return-to";
+import {
+  DEFAULT_RETURN_TO,
+  loginUrl,
+  returnPathOf,
+  sanitizeReturnTo,
+} from "./return-to";
 
 describe("sanitizeReturnTo", () => {
   it("keeps same-origin app paths, with sub-path and query", () => {
@@ -42,7 +47,9 @@ describe("sanitizeReturnTo", () => {
 
   it("returnPathOf drops the router's internal params", () => {
     expect(
-      returnPathOf(new URL("http://x/sites/rpn/?status=approved&qaction=abc&qloaders=1")),
+      returnPathOf(
+        new URL("http://x/sites/rpn/?status=approved&qaction=abc&qloaders=1"),
+      ),
     ).toBe("/sites/rpn/?status=approved");
     expect(returnPathOf(new URL("http://x/auth/sign-in/"))).toBe("/");
   });

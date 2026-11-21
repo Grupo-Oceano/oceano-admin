@@ -68,7 +68,8 @@ export const requireStaff: RequestHandler = async (ev) => {
         throw ev.redirect(302, "/auth/sign-in/?error=rejected");
       throw ev.redirect(302, loginUrl(returnTo));
     }
-    const reason = error.status === 403 ? notEnabledReasonOf(error.message) : null;
+    const reason =
+      error.status === 403 ? notEnabledReasonOf(error.message) : null;
     if (reason) throw ev.redirect(302, `/auth/not-enabled/?reason=${reason}`);
     console.warn(`[auth] /admin/me failed: ${error.status} ${error.message}`);
     throw ev.redirect(
@@ -88,7 +89,10 @@ export const sessionOf = (
   (ev.sharedMap.get(SESSION) as SessionView | undefined) ?? null;
 
 /** Why a section refuses the staff member; the section layout renders it in place of the page. */
-export type AccessDenied = { reason: "owner_only" | "no_site_access"; site?: string };
+export type AccessDenied = {
+  reason: "owner_only" | "no_site_access";
+  site?: string;
+};
 
 const deny = (ev: Parameters<RequestHandler>[0], denied: AccessDenied) => {
   ev.sharedMap.set(ACCESS_DENIED, denied);

@@ -101,4 +101,8 @@ export const humanizeKey = (key: string): string => {
 
 /** "Approved" → tone for a Badge. */
 export const requestTone = (status: string) =>
-  status === "approved" ? "success" : status === "rejected" ? "danger" : "warning";
+  status === "approved"
+    ? "success"
+    : status === "rejected"
+      ? "danger"
+      : "warning";

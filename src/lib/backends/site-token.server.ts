@@ -27,16 +27,21 @@ export async function getSiteToken(
   const cached = siteTokens.get(staffId, site);
   if (cached) return [null, cached];
 
-  return siteTokens.shared(staffId, site, async (): Promise<Result<SiteToken>> => {
-    const [error, res] = await coreApi(ev).post<ApiResponse<SiteToken>>(
-      "/admin/site-tokens",
-      { site },
-    );
-    if (error) return [error, null];
-    if (!res?.data?.token) return [{ status: 502, message: "bad_site_token" }, null];
-    siteTokens.set(staffId, site, res.data);
-    return [null, res.data];
-  });
+  return siteTokens.shared(
+    staffId,
+    site,
+    async (): Promise<Result<SiteToken>> => {
+      const [error, res] = await coreApi(ev).post<ApiResponse<SiteToken>>(
+        "/admin/site-tokens",
+        { site },
+      );
+      if (error) return [error, null];
+      if (!res?.data?.token)
+        return [{ status: 502, message: "bad_site_token" }, null];
+      siteTokens.set(staffId, site, res.data);
+      return [null, res.data];
+    },
+  );
 }
 
 /** Drops a token a site API rejected (401), so the next call gets a fresh one. */

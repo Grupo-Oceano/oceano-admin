@@ -77,10 +77,7 @@ export async function readSession(
   cookie: Cookie,
   secret: string,
 ): Promise<EntraSession | null> {
-  const sealed = joinChunks(
-    SESSION_COOKIE,
-    (name) => cookie.get(name)?.value,
-  );
+  const sealed = joinChunks(SESSION_COOKIE, (name) => cookie.get(name)?.value);
   const session = await unseal<EntraSession>(sealed, secret, "admin-session");
   return session?.v === 1 ? session : null;
 }

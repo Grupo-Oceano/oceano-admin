@@ -16,11 +16,16 @@ export async function rpnWrite<T>(
   done: string | ((data: T) => string),
 ) {
   if (!siteRoleOf(ev, "rpn"))
-    return ev.fail(403, { message: rpnErrorMessage({ status: 403, message: "no_site_access" }) });
+    return ev.fail(403, {
+      message: rpnErrorMessage({ status: 403, message: "no_site_access" }),
+    });
   const [error, data] = await rpnCall(ev, call);
   if (error) return ev.fail(error.status, { message: rpnErrorMessage(error) });
   return { message: typeof done === "function" ? done(data) : done };
 }
 
 /** Loader side: a site API failure is shown in place (never "sign in again": that would loop). */
-export const rpnLoaderOptions = { message: rpnErrorMessage, signInOn401: false } as const;
+export const rpnLoaderOptions = {
+  message: rpnErrorMessage,
+  signInOn401: false,
+} as const;

@@ -1,5 +1,12 @@
 import { component$ } from "@qwik.dev/core";
-import { Menu, MenuButton, MenuHeading, MenuItem, MenuItems, button } from "~/components/ui";
+import {
+  Menu,
+  MenuButton,
+  MenuHeading,
+  MenuItem,
+  MenuItems,
+  button,
+} from "~/components/ui";
 import type { SessionView } from "~/lib/auth/session";
 import { navFor } from "./nav";
 import ThemeToggle from "./ThemeToggle";
@@ -26,7 +33,10 @@ export default component$<{ session: SessionView }>(({ session }) => (
                 <MenuHeading key={item.label}>{item.label}</MenuHeading>
               ) : (
                 <MenuItem key={item.href} href={item.href}>
-                  <span class="material-symbols-rounded text-lg" aria-hidden="true">
+                  <span
+                    class="material-symbols-rounded text-lg"
+                    aria-hidden="true"
+                  >
                     {item.icon}
                   </span>
                   {item.label}
@@ -36,7 +46,10 @@ export default component$<{ session: SessionView }>(({ session }) => (
           </MenuItems>
         </Menu>
       </div>
-      <a href="/" class="px-2 font-semibold text-gray-700 lg:hidden dark:text-gray-200">
+      <a
+        href="/"
+        class="px-2 font-semibold text-gray-700 lg:hidden dark:text-gray-200"
+      >
         Oceano Admin
       </a>
     </div>

@@ -4,7 +4,10 @@ import type { StaffMember, StaffStatus } from "~/features/access/schema";
 import { formatDateTime } from "~/lib/utils/format";
 import { StaffPageCtx } from "./context";
 
-export const STATUS_TONE: Record<StaffStatus, "warning" | "success" | "danger"> = {
+export const STATUS_TONE: Record<
+  StaffStatus,
+  "warning" | "success" | "danger"
+> = {
   pending: "warning",
   active: "success",
   disabled: "danger",
@@ -43,8 +46,12 @@ const Sites = component$<{ row: StaffMember }>(({ row }) =>
 );
 
 const LastSignIn = component$<{ row: StaffMember }>(({ row }) => (
-  <span class="whitespace-nowrap text-sm">
-    {row.lastSignInAt ? formatDateTime(row.lastSignInAt) : row.entraOid ? "—" : "Never signed in"}
+  <span class="text-sm whitespace-nowrap">
+    {row.lastSignInAt
+      ? formatDateTime(row.lastSignInAt)
+      : row.entraOid
+        ? "—"
+        : "Never signed in"}
   </span>
 ));
 
@@ -67,6 +74,11 @@ export const staffColumns: Column<StaffMember>[] = [
   { key: "name", header: "Person", cell: Person },
   { key: "status", header: "Status", cell: Status },
   { key: "grants", header: "Sites", cell: Sites, hideBelow: "md" },
-  { key: "lastSignInAt", header: "Last sign-in", cell: LastSignIn, hideBelow: "lg" },
+  {
+    key: "lastSignInAt",
+    header: "Last sign-in",
+    cell: LastSignIn,
+    hideBelow: "lg",
+  },
   { key: "id", header: "", cell: Manage, align: "end" },
 ];

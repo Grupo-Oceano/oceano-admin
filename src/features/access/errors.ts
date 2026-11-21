@@ -7,7 +7,8 @@ export const ACCESS_ERROR_CODES: Record<string, string> = {
   cannot_demote_self: "You can't remove your own owner role.",
   last_owner: "There must always be at least one owner.",
   staff_exists: "Someone with that email is already in the staff list.",
-  email_domain_not_allowed: "Only work email addresses (@gooceano.com) can be staff.",
+  email_domain_not_allowed:
+    "Only work email addresses (@gooceano.com) can be staff.",
   invalid_role: "That role doesn't exist for this site.",
   staff_not_found: "That staff member no longer exists.",
   site_not_found: "That site doesn't exist.",

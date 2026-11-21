@@ -4,7 +4,8 @@ import { REVIEW_QUEUE_FILTERS, REVIEW_SUBJECTS } from "./contract";
 /** Page size of the review queue (the API allows 1–100). */
 export const REVIEW_PAGE_SIZE = 25;
 
-const CURSOR = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CURSOR =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * `/sites/rpn?status=&subject=&cursor=` (the URL is the state). Never throws: unknown values drop to the

@@ -17,7 +17,12 @@ import { z } from "@qwik.dev/router";
  *   POST /admin/properties/:listingId/link-escapia    → 202 EscapiaQueueItem
  */
 
-export const STATUS_REQUEST_STATUSES = ["pending", "under_review", "approved", "rejected"] as const;
+export const STATUS_REQUEST_STATUSES = [
+  "pending",
+  "under_review",
+  "approved",
+  "rejected",
+] as const;
 export type StatusRequestStatus = (typeof STATUS_REQUEST_STATUSES)[number];
 
 export const REVIEW_SUBJECTS = ["partner", "listing"] as const;
@@ -59,21 +64,30 @@ export const isUuid = (raw: string | undefined | null): raw is string =>
   !!raw && UUID.test(raw);
 
 /** Notes the partner reads. Required on reject, optional on approve. */
-const reviewNotes = z.string().trim().max(2000, "Notes can be at most 2000 characters.");
+const reviewNotes = z
+  .string()
+  .trim()
+  .max(2000, "Notes can be at most 2000 characters.");
 
 /** POST /admin/status-requests/:id/approve (+ the route id). */
 export const approveRequestInput = z.object({
   id: z.string().regex(UUID),
   reviewNotes: reviewNotes.optional().transform((v) => (v ? v : undefined)),
   /** Listings only; defaults (API side) to the partner's requested strategy. Ignored for partners. */
-  strategy: z.enum(PROPERTY_STRATEGIES).optional().or(z.literal("").transform(() => undefined)),
+  strategy: z
+    .enum(PROPERTY_STRATEGIES)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 export type ApproveRequestInput = z.infer<typeof approveRequestInput>;
 
 /** POST /admin/status-requests/:id/reject (+ the route id). */
 export const rejectRequestInput = z.object({
   id: z.string().regex(UUID),
-  reviewNotes: reviewNotes.min(3, "Write at least 3 characters for the partner."),
+  reviewNotes: reviewNotes.min(
+    3,
+    "Write at least 3 characters for the partner.",
+  ),
 });
 export type RejectRequestInput = z.infer<typeof rejectRequestInput>;
 
@@ -110,7 +124,10 @@ export type ReviewQueueItem = {
   listing: { id: string; name: string; type: string } | null;
 };
 
-export type ReviewQueuePage = { items: ReviewQueueItem[]; nextCursor: string | null };
+export type ReviewQueuePage = {
+  items: ReviewQueueItem[];
+  nextCursor: string | null;
+};
 
 export type StatusRequestDetail = ReviewQueueItem & {
   reviewNotes: string | null;
@@ -160,5 +177,9 @@ export type EscapiaKeyingSection = {
 };
 
 export type EscapiaKeyingDetail = EscapiaQueueItem & {
-  intake: { id: string; submittedAt: string; sections: EscapiaKeyingSection[] } | null;
+  intake: {
+    id: string;
+    submittedAt: string;
+    sections: EscapiaKeyingSection[];
+  } | null;
 };

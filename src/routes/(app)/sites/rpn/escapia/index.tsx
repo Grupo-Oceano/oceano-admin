@@ -1,9 +1,20 @@
 import { component$ } from "@qwik.dev/core";
-import { Form, Link, routeAction$, routeLoader$, zod$, type DocumentHead } from "@qwik.dev/router";
+import {
+  Form,
+  Link,
+  routeAction$,
+  routeLoader$,
+  zod$,
+  type DocumentHead,
+} from "@qwik.dev/router";
 import EscapiaStatus from "~/components/modules/rpn/EscapiaStatus";
 import { Button, button, DataTable, type Column } from "~/components/ui";
 import { rpnLoaderOptions, rpnWrite } from "~/features/rpn/actions.server";
-import { listingIdInput, type EscapiaQueueItem, type EscapiaQueuePage } from "~/features/rpn/contract";
+import {
+  listingIdInput,
+  type EscapiaQueueItem,
+  type EscapiaQueuePage,
+} from "~/features/rpn/contract";
 import { ASSIGNEE_FILTERS } from "~/features/rpn/labels";
 import {
   ESCAPIA_ASSIGNEE_FILTERS,
@@ -25,7 +36,12 @@ export const useEscapiaQueue = routeLoader$(
     if (!siteRoleOf(ev, "rpn")) return { view, items: [], error: null };
     const { data, error } = loaderResult(
       ev,
-      await rpnCall(ev, (api) => api.get<EscapiaQueuePage>("/admin/escapia-queue", escapiaQueueApiQuery(view))),
+      await rpnCall(ev, (api) =>
+        api.get<EscapiaQueuePage>(
+          "/admin/escapia-queue",
+          escapiaQueueApiQuery(view),
+        ),
+      ),
       rpnLoaderOptions,
     );
     return { view, items: data?.items ?? [], error };
@@ -35,13 +51,23 @@ export const useEscapiaQueue = routeLoader$(
 
 export const useClaim = routeAction$(
   ({ listingId }, ev) =>
-    rpnWrite(ev, (api) => api.post<EscapiaQueueItem>(`/admin/properties/${listingId}/claim`), (item) => `You claimed ${item.name}.`),
+    rpnWrite(
+      ev,
+      (api) =>
+        api.post<EscapiaQueueItem>(`/admin/properties/${listingId}/claim`),
+      (item) => `You claimed ${item.name}.`,
+    ),
   zod$(listingIdInput),
 );
 
 export const useUnclaim = routeAction$(
   ({ listingId }, ev) =>
-    rpnWrite(ev, (api) => api.post<EscapiaQueueItem>(`/admin/properties/${listingId}/unclaim`), (item) => `${item.name} is unclaimed.`),
+    rpnWrite(
+      ev,
+      (api) =>
+        api.post<EscapiaQueueItem>(`/admin/properties/${listingId}/unclaim`),
+      (item) => `${item.name} is unclaimed.`,
+    ),
   zod$(listingIdInput),
 );
 
@@ -52,15 +78,21 @@ const Property = component$<{ row: EscapiaQueueItem }>(({ row }) => (
     data-testid={`keying-${row.listingId}`}
   >
     <span class="truncate">{row.name}</span>
-    <span class="text-xs font-normal text-gray-500 dark:text-gray-400">{row.partner.companyName}</span>
+    <span class="text-xs font-normal text-gray-500 dark:text-gray-400">
+      {row.partner.companyName}
+    </span>
   </Link>
 ));
 
 const Approved = component$<{ row: EscapiaQueueItem }>(({ row }) => (
-  <span class="whitespace-nowrap text-sm">{row.approvedAt ? formatDateTime(row.approvedAt) : "—"}</span>
+  <span class="text-sm whitespace-nowrap">
+    {row.approvedAt ? formatDateTime(row.approvedAt) : "—"}
+  </span>
 ));
 
-const Status = component$<{ row: EscapiaQueueItem }>(({ row }) => <EscapiaStatus item={row} />);
+const Status = component$<{ row: EscapiaQueueItem }>(({ row }) => (
+  <EscapiaStatus item={row} />
+));
 
 /** Claim / unclaim from the list; each is a plain form (works without JS). */
 const Claim = component$<{ row: EscapiaQueueItem }>(({ row }) => {
@@ -100,7 +132,8 @@ export default component$(() => {
   return (
     <div class="flex flex-col gap-3">
       <p class="px-1 text-sm text-gray-500 dark:text-gray-400">
-        Key each property into Escapia's own setup, then paste its unit id back here. Claim one so nobody keys it twice.
+        Key each property into Escapia's own setup, then paste its unit id back
+        here. Claim one so nobody keys it twice.
       </p>
       <DataTable
         columns={columns}
@@ -110,13 +143,20 @@ export default component$(() => {
         emptyText="Nothing is waiting for Escapia keying in this view."
         testId="escapia-queue"
       >
-        <nav q:slot="toolbar" aria-label="Assignee" class="flex flex-wrap gap-2 border-b border-gray-200 p-3 dark:border-gray-700">
+        <nav
+          q:slot="toolbar"
+          aria-label="Assignee"
+          class="flex flex-wrap gap-2 border-b border-gray-200 p-3 dark:border-gray-700"
+        >
           {ESCAPIA_ASSIGNEE_FILTERS.map((assignee) => (
             <Link
               key={assignee || "all"}
               href={escapiaQueueHref({ assignee })}
               aria-current={view.assignee === assignee ? "page" : undefined}
-              class={button({ intent: view.assignee === assignee ? "primary" : "secondary", size: "sm" })}
+              class={button({
+                intent: view.assignee === assignee ? "primary" : "secondary",
+                size: "sm",
+              })}
             >
               {ASSIGNEE_FILTERS[assignee]}
             </Link>
@@ -127,4 +167,6 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "Escapia keying - RockyPoint.net - Oceano Admin" };
+export const head: DocumentHead = {
+  title: "Escapia keying - RockyPoint.net - Oceano Admin",
+};

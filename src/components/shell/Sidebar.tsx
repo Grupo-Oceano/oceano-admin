@@ -25,7 +25,10 @@ export default component$<{ session: SessionView }>(({ session }) => (
       <div class="flex w-full flex-col overflow-y-auto">
         {navFor(session).map((item) =>
           item.type === "separator" ? (
-            <p key={item.label} class={heading({ level: "group", class: "m-2 opacity-60" })}>
+            <p
+              key={item.label}
+              class={heading({ level: "group", class: "m-2 opacity-60" })}
+            >
               {item.label}
             </p>
           ) : (

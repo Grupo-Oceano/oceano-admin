@@ -18,7 +18,10 @@ const sameString = (a: string, b: string) => {
   return x.length === y.length && timingSafeEqual(x, y);
 };
 
-const claim = (claims: Record<string, unknown>, key: string): string | undefined =>
+const claim = (
+  claims: Record<string, unknown>,
+  key: string,
+): string | undefined =>
   typeof claims[key] === "string" ? (claims[key] as string) : undefined;
 
 /**
@@ -35,7 +38,8 @@ export const onGet: RequestHandler = async (ev) => {
 
   const origin = publicOrigin(get, ev.url);
   const tx = await takeLoginTransaction(ev.cookie, config.sessionSecret);
-  const fail = (error: SignInError) => ev.redirect(302, `/auth/sign-in/?error=${error}`);
+  const fail = (error: SignInError) =>
+    ev.redirect(302, `/auth/sign-in/?error=${error}`);
 
   if (ev.query.get("error")) {
     // e.g. access_denied (user not assigned to the app) or consent_required.
@@ -79,7 +83,8 @@ export const onGet: RequestHandler = async (ev) => {
         exp: Math.floor(result.expiresOn.getTime() / 1000),
         iat: Math.floor(Date.now() / 1000),
         name: result.account?.name ?? claim(claims, "name") ?? "",
-        email: result.account?.username ?? claim(claims, "preferred_username") ?? "",
+        email:
+          result.account?.username ?? claim(claims, "preferred_username") ?? "",
         oid,
       },
       config.sessionSecret,
@@ -87,7 +92,10 @@ export const onGet: RequestHandler = async (ev) => {
     );
   } catch (error) {
     // Only an oversized token gets here (more than MAX_COOKIE_CHUNKS cookies).
-    console.error("[auth] could not store the session:", (error as Error).message);
+    console.error(
+      "[auth] could not store the session:",
+      (error as Error).message,
+    );
     throw fail("session");
   }
 

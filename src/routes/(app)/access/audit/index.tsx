@@ -2,7 +2,12 @@ import { component$ } from "@qwik.dev/core";
 import { Link, routeLoader$, type DocumentHead } from "@qwik.dev/router";
 import { button, DataTable, type Column } from "~/components/ui";
 import { accessErrorMessage } from "~/features/access/errors";
-import { auditQuery, type AuditEntry, type AuditPage, type StaffMember } from "~/features/access/schema";
+import {
+  auditQuery,
+  type AuditEntry,
+  type AuditPage,
+  type StaffMember,
+} from "~/features/access/schema";
 import { isOwner } from "~/lib/auth/guard.server";
 import { coreApi } from "~/lib/backends/core.server";
 import type { ApiResponse } from "~/lib/backends/types";
@@ -33,8 +38,11 @@ export const useAudit = routeLoader$(
       core.get<ApiResponse<StaffMember[]>>("/admin/staff"),
     ]);
     const page = loaderResult(ev, audit, { message: accessErrorMessage });
-    const people = new Map((staff[1]?.data ?? []).map((s) => [s.id, s.name || s.email]));
-    const nameOf = (id: string | null) => (id ? (people.get(id) ?? id) : "system");
+    const people = new Map(
+      (staff[1]?.data ?? []).map((s) => [s.id, s.name || s.email]),
+    );
+    const nameOf = (id: string | null) =>
+      id ? (people.get(id) ?? id) : "system";
     const rows: AuditRow[] = (page.data?.data.items ?? []).map((item) => {
       // Grant targets are `<staffId>:<site>`.
       const [staffId, site] = item.targetId.split(":");
@@ -42,10 +50,17 @@ export const useAudit = routeLoader$(
         ...item,
         actor: nameOf(item.actorId),
         target: site ? `${nameOf(staffId)} on ${site}` : nameOf(item.targetId),
-        change: [compact(item.before), compact(item.after)].filter(Boolean).join(" → "),
+        change: [compact(item.before), compact(item.after)]
+          .filter(Boolean)
+          .join(" → "),
       };
     });
-    return { query, rows, nextCursor: page.data?.data.nextCursor ?? null, error: page.error };
+    return {
+      query,
+      rows,
+      nextCursor: page.data?.data.nextCursor ?? null,
+      error: page.error,
+    };
   },
   { search: searchKeys(auditQuery) },
 );
@@ -54,7 +69,9 @@ const When = component$<{ row: AuditRow }>(({ row }) => (
   <span class="whitespace-nowrap">{formatDateTime(row.createdAt)}</span>
 ));
 const Change = component$<{ row: AuditRow }>(({ row }) => (
-  <code class="text-xs break-all text-gray-600 dark:text-gray-300">{row.change}</code>
+  <code class="text-xs break-all text-gray-600 dark:text-gray-300">
+    {row.change}
+  </code>
 ));
 
 const columns: Column<AuditRow>[] = [
@@ -69,11 +86,24 @@ export default component$(() => {
   const audit = useAudit();
   const { query, rows, nextCursor, error } = audit.value;
   return (
-    <DataTable columns={columns} rows={rows} error={error} rowKey="id" emptyText="No changes recorded." testId="audit">
+    <DataTable
+      columns={columns}
+      rows={rows}
+      error={error}
+      rowKey="id"
+      emptyText="No changes recorded."
+      testId="audit"
+    >
       {(query.cursor || nextCursor) && (
-        <nav q:slot="footer" class="flex items-center justify-between gap-4 border-t border-gray-200 p-3 dark:border-gray-700">
+        <nav
+          q:slot="footer"
+          class="flex items-center justify-between gap-4 border-t border-gray-200 p-3 dark:border-gray-700"
+        >
           {query.cursor ? (
-            <Link href="/access/audit/" class={button({ intent: "secondary", size: "sm" })}>
+            <Link
+              href="/access/audit/"
+              class={button({ intent: "secondary", size: "sm" })}
+            >
               First page
             </Link>
           ) : (

@@ -16,8 +16,13 @@ export const useNotEnabled = routeLoader$(
     ev.status(403);
     const reason = notEnabledReasonOf(ev.query.get("reason")) ?? "not_enabled";
     const config = readAuthConfig((name) => ev.env.get(name));
-    const session = config ? await readSession(ev.cookie, config.sessionSecret) : null;
-    return { message: NOT_ENABLED_REASONS[reason], email: session?.email ?? null };
+    const session = config
+      ? await readSession(ev.cookie, config.sessionSecret)
+      : null;
+    return {
+      message: NOT_ENABLED_REASONS[reason],
+      email: session?.email ?? null,
+    };
   },
   { search: ["reason"] },
 );
@@ -28,7 +33,8 @@ export default component$(() => {
   return (
     <AuthCard title="Not enabled yet">
       <Alert tone="warning" icon="person_off" role="alert" testId="not-enabled">
-        {page.value.message} Ask an owner ({OWNER_CONTACT}) to enable you and give you a site.
+        {page.value.message} Ask an owner ({OWNER_CONTACT}) to enable you and
+        give you a site.
       </Alert>
       {page.value.email && (
         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -40,7 +46,10 @@ export default component$(() => {
           Try again
         </a>
         <form method="post" action="/auth/logout">
-          <button type="submit" class={button({ intent: "secondary", block: true })}>
+          <button
+            type="submit"
+            class={button({ intent: "secondary", block: true })}
+          >
             Sign out and use another account
           </button>
         </form>

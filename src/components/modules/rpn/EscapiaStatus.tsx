@@ -7,8 +7,13 @@ import { formatDateTime } from "~/lib/utils/format";
 export default component$<{ item: EscapiaQueueItem }>(({ item }) => (
   <span class="flex flex-col items-start gap-1">
     {item.linkFailure && (
-      <Badge tone="danger" icon="link_off" testId={`link-failure-${item.listingId}`}>
-        {item.linkFailure.escapiaUnitId} not found in Escapia ({formatDateTime(item.linkFailure.failedAt)})
+      <Badge
+        tone="danger"
+        icon="link_off"
+        testId={`link-failure-${item.listingId}`}
+      >
+        {item.linkFailure.escapiaUnitId} not found in Escapia (
+        {formatDateTime(item.linkFailure.failedAt)})
       </Badge>
     )}
     {item.escapiaUnitId ? (

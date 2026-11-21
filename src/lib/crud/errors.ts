@@ -25,7 +25,8 @@ export function errorMessage(error: ApiError, messages: ErrorMessages): string {
   const code = error.message?.trim();
   if (code && messages.codes && Object.hasOwn(messages.codes, code))
     return messages.codes[code];
-  const byStatus = messages.status?.[error.status] ?? COMMON_STATUS[error.status];
+  const byStatus =
+    messages.status?.[error.status] ?? COMMON_STATUS[error.status];
   if (byStatus) return byStatus;
   if (error.status >= 500) return COMMON_STATUS[503];
   return messages.fallback;

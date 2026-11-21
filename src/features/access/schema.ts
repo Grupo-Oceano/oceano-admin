@@ -86,7 +86,12 @@ export type StaffMember = {
   grants: Grant[];
 };
 
-export type Site = { key: string; name: string; roles: string[]; active: boolean };
+export type Site = {
+  key: string;
+  name: string;
+  roles: string[];
+  active: boolean;
+};
 
 export type AuditEntry = {
   id: string;
@@ -101,7 +106,11 @@ export type AuditEntry = {
 
 export type AuditPage = { items: AuditEntry[]; nextCursor: string | null };
 
-const STATUS_ORDER: Record<StaffStatus, number> = { pending: 0, active: 1, disabled: 2 };
+const STATUS_ORDER: Record<StaffStatus, number> = {
+  pending: 0,
+  active: 1,
+  disabled: 2,
+};
 
 /** Pending first (new sign-ins waiting for an owner), then active, then disabled; by name within each. */
 export const sortStaff = (rows: StaffMember[]): StaffMember[] =>

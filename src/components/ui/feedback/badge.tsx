@@ -25,9 +25,15 @@ export const Badge = component$<{
   class?: string;
   testId?: string;
 }>((props) => (
-  <span class={badge({ tone: props.tone, class: props.class })} data-testid={props.testId}>
+  <span
+    class={badge({ tone: props.tone, class: props.class })}
+    data-testid={props.testId}
+  >
     {props.icon && (
-      <span class="material-symbols-rounded text-sm leading-none" aria-hidden="true">
+      <span
+        class="material-symbols-rounded text-sm leading-none"
+        aria-hidden="true"
+      >
         {props.icon}
       </span>
     )}

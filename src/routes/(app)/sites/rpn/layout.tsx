@@ -3,7 +3,11 @@ import { routeLoader$ } from "@qwik.dev/router";
 import Forbidden from "~/components/shell/Forbidden";
 import NavLink from "~/components/shell/NavLink";
 import { Badge, heading } from "~/components/ui";
-import { accessDeniedOf, requireSite, siteRoleOf } from "~/lib/auth/guard.server";
+import {
+  accessDeniedOf,
+  requireSite,
+  siteRoleOf,
+} from "~/lib/auth/guard.server";
 
 /** RockyPoint.net: staff with an rpn grant (owners have every site). No grant → 403 page. */
 export const onRequest = requireSite("rpn");
@@ -19,24 +23,40 @@ const activeTab = "bg-surface text-gray-900 shadow-sm dark:text-white";
 
 export default component$(() => {
   const access = useRpnAccess();
-  if (access.value.denied) return <Forbidden denied={access.value.denied} siteName="RockyPoint.net" />;
+  if (access.value.denied)
+    return <Forbidden denied={access.value.denied} siteName="RockyPoint.net" />;
   return (
     <div class="flex flex-col gap-4">
       <header class="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class={heading({ level: "page", class: "flex flex-wrap items-center gap-2" })}>
+          <h1
+            class={heading({
+              level: "page",
+              class: "flex flex-wrap items-center gap-2",
+            })}
+          >
             RockyPoint.net
-            {access.value.role && <Badge tone="info">{access.value.role}</Badge>}
+            {access.value.role && (
+              <Badge tone="info">{access.value.role}</Badge>
+            )}
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            Partner companies and listings waiting for a decision, and Oceano-managed properties to key into Escapia.
+            Partner companies and listings waiting for a decision, and
+            Oceano-managed properties to key into Escapia.
           </p>
         </div>
-        <nav aria-label="RockyPoint.net sections" class="inline-flex self-start rounded-full bg-surface-3 p-1">
+        <nav
+          aria-label="RockyPoint.net sections"
+          class="bg-surface-3 inline-flex self-start rounded-full p-1"
+        >
           <NavLink href="/sites/rpn/" class={tab} activeClass={activeTab}>
             Review queue
           </NavLink>
-          <NavLink href="/sites/rpn/escapia/" class={tab} activeClass={activeTab}>
+          <NavLink
+            href="/sites/rpn/escapia/"
+            class={tab}
+            activeClass={activeTab}
+          >
             Escapia keying
           </NavLink>
         </nav>

@@ -78,9 +78,13 @@ const raw = (snapshot: unknown): SnapshotView => ({
   json: JSON.stringify(snapshot ?? null, null, 2),
 });
 
-export function describeSnapshot(subject: ReviewSubject, snapshot: unknown): SnapshotView {
+export function describeSnapshot(
+  subject: ReviewSubject,
+  snapshot: unknown,
+): SnapshotView {
   if (typeof snapshot !== "object" || snapshot === null) return raw(snapshot);
-  if ((snapshot as { schemaVersion?: unknown }).schemaVersion !== 1) return raw(snapshot);
+  if ((snapshot as { schemaVersion?: unknown }).schemaVersion !== 1)
+    return raw(snapshot);
   const parsed =
     subject === "partner"
       ? companySnapshot.safeParse(snapshot)
@@ -93,7 +97,9 @@ export function describeSnapshot(subject: ReviewSubject, snapshot: unknown): Sna
 
 /** "$1,250.00"-style price from integer cents. */
 export const formatPriceFrom = (cents: number, currency: string): string =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
+  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(
+    cents / 100,
+  );
 
 /** The partner's requested strategy, to preselect it on approve. */
 export const requestedStrategyOf = (snapshot: unknown): string | undefined => {
@@ -101,5 +107,7 @@ export const requestedStrategyOf = (snapshot: unknown): string | undefined => {
     typeof snapshot === "object" && snapshot !== null
       ? (snapshot as Record<string, unknown>).requestedStrategy
       : undefined;
-  return value === "self_managed" || value === "oceano_managed" ? value : undefined;
+  return value === "self_managed" || value === "oceano_managed"
+    ? value
+    : undefined;
 };

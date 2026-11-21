@@ -36,8 +36,9 @@ export default component$(() => {
           role="alert"
           testId="sign-in-not-configured"
         >
-          This environment has no Microsoft Entra settings yet, so nobody can sign in. An administrator
-          needs to set ENTRA_TENANT_ID, ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, ENTRA_API_SCOPE and
+          This environment has no Microsoft Entra settings yet, so nobody can
+          sign in. An administrator needs to set ENTRA_TENANT_ID,
+          ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, ENTRA_API_SCOPE and
           ADMIN_SESSION_SECRET (docs/setup/entra.md).
         </Alert>
       </AuthCard>
@@ -54,7 +55,11 @@ export default component$(() => {
           {error}
         </Alert>
       )}
-      <a href={loginHref} class={button({ class: "lg:self-start" })} data-testid="sign-in">
+      <a
+        href={loginHref}
+        class={button({ class: "lg:self-start" })}
+        data-testid="sign-in"
+      >
         <span class="material-symbols-rounded" aria-hidden="true">
           login
         </span>

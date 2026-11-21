@@ -2,7 +2,11 @@ import { component$ } from "@qwik.dev/core";
 import { Link, routeLoader$, type DocumentHead } from "@qwik.dev/router";
 import { Badge, button, DataTable, type Column } from "~/components/ui";
 import { rpnLoaderOptions } from "~/features/rpn/actions.server";
-import { REVIEW_QUEUE_FILTERS, type ReviewQueueItem, type ReviewQueuePage } from "~/features/rpn/contract";
+import {
+  REVIEW_QUEUE_FILTERS,
+  type ReviewQueueItem,
+  type ReviewQueuePage,
+} from "~/features/rpn/contract";
 import {
   QUEUE_TABS,
   REQUEST_STATUS,
@@ -11,7 +15,11 @@ import {
   SUBJECT_LABEL,
   labelOf,
 } from "~/features/rpn/labels";
-import { reviewQueueApiQuery, reviewQueueHref, reviewQueueQuery } from "~/features/rpn/query";
+import {
+  reviewQueueApiQuery,
+  reviewQueueHref,
+  reviewQueueQuery,
+} from "~/features/rpn/query";
 import { siteRoleOf } from "~/lib/auth/guard.server";
 import { rpnCall } from "~/lib/backends/rpn.server";
 import { loaderResult } from "~/lib/backends/unwrap.server";
@@ -22,13 +30,24 @@ import { formatDateTime } from "~/lib/utils/format";
 export const useReviewQueue = routeLoader$(
   async (ev) => {
     const view = reviewQueueQuery.parse(searchObject(ev.url.searchParams));
-    if (!siteRoleOf(ev, "rpn")) return { view, items: [], nextCursor: null, error: null };
+    if (!siteRoleOf(ev, "rpn"))
+      return { view, items: [], nextCursor: null, error: null };
     const { data, error } = loaderResult(
       ev,
-      await rpnCall(ev, (api) => api.get<ReviewQueuePage>("/admin/review-queue", reviewQueueApiQuery(view))),
+      await rpnCall(ev, (api) =>
+        api.get<ReviewQueuePage>(
+          "/admin/review-queue",
+          reviewQueueApiQuery(view),
+        ),
+      ),
       rpnLoaderOptions,
     );
-    return { view, items: data?.items ?? [], nextCursor: data?.nextCursor ?? null, error };
+    return {
+      view,
+      items: data?.items ?? [],
+      nextCursor: data?.nextCursor ?? null,
+      error,
+    };
   },
   { search: searchKeys(reviewQueueQuery) },
 );
@@ -49,13 +68,17 @@ const Title = component$<{ row: ReviewQueueItem }>(({ row }) => (
 ));
 
 const When = component$<{ row: ReviewQueueItem }>(({ row }) => (
-  <span class="whitespace-nowrap text-sm">
-    {row.reviewedAt ? `Decided ${formatDateTime(row.reviewedAt)}` : `Sent ${formatDateTime(row.createdAt)}`}
+  <span class="text-sm whitespace-nowrap">
+    {row.reviewedAt
+      ? `Decided ${formatDateTime(row.reviewedAt)}`
+      : `Sent ${formatDateTime(row.createdAt)}`}
   </span>
 ));
 
 const Status = component$<{ row: ReviewQueueItem }>(({ row }) => (
-  <Badge tone={requestTone(row.status)}>{labelOf(REQUEST_STATUS, row.status)}</Badge>
+  <Badge tone={requestTone(row.status)}>
+    {labelOf(REQUEST_STATUS, row.status)}
+  </Badge>
 ));
 
 const columns: Column<ReviewQueueItem>[] = [
@@ -83,7 +106,10 @@ export default component$(() => {
         emptyText="There are no requests in this view."
         testId="review-queue"
       >
-        <div q:slot="toolbar" class="flex flex-col gap-3 border-b border-gray-200 p-3 lg:flex-row lg:items-center lg:justify-between dark:border-gray-700">
+        <div
+          q:slot="toolbar"
+          class="flex flex-col gap-3 border-b border-gray-200 p-3 lg:flex-row lg:items-center lg:justify-between dark:border-gray-700"
+        >
           <nav aria-label="Request status" class="flex flex-wrap gap-2">
             {REVIEW_QUEUE_FILTERS.map((status) => (
               <Link
@@ -110,9 +136,15 @@ export default component$(() => {
           </nav>
         </div>
         {(view.cursor || nextCursor) && (
-          <nav q:slot="footer" class="flex items-center justify-between gap-4 border-t border-gray-200 p-3 dark:border-gray-700">
+          <nav
+            q:slot="footer"
+            class="flex items-center justify-between gap-4 border-t border-gray-200 p-3 dark:border-gray-700"
+          >
             {view.cursor ? (
-              <Link href={reviewQueueHref({ ...view, cursor: "" })} class={button({ intent: "secondary", size: "sm" })}>
+              <Link
+                href={reviewQueueHref({ ...view, cursor: "" })}
+                class={button({ intent: "secondary", size: "sm" })}
+              >
                 Back to first page
               </Link>
             ) : (
@@ -138,4 +170,6 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "Review queue - RockyPoint.net - Oceano Admin" };
+export const head: DocumentHead = {
+  title: "Review queue - RockyPoint.net - Oceano Admin",
+};

@@ -27,7 +27,8 @@ export const onGet: RequestHandler = async (ev) => {
 
   const origin = publicOrigin(get, ev.url);
   const returnTo = sanitizeReturnTo(ev.query.get("returnTo"));
-  const { verifier, challenge } = await new CryptoProvider().generatePkceCodes();
+  const { verifier, challenge } =
+    await new CryptoProvider().generatePkceCodes();
   const state = randomBytes(32).toString("base64url");
   const nonce = randomBytes(32).toString("base64url");
 
@@ -43,7 +44,10 @@ export const onGet: RequestHandler = async (ev) => {
       nonce,
     });
   } catch (error) {
-    console.error("[auth] could not build the Entra sign-in URL:", (error as Error).message);
+    console.error(
+      "[auth] could not build the Entra sign-in URL:",
+      (error as Error).message,
+    );
     throw ev.redirect(302, "/auth/sign-in/?error=entra");
   }
 

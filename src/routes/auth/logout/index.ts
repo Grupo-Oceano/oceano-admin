@@ -18,5 +18,8 @@ export const onPost: RequestHandler = async (ev) => {
   clearSession(ev.cookie);
   ev.headers.set("Cache-Control", "no-store");
   if (!config) throw ev.redirect(303, "/auth/signed-out/");
-  throw ev.redirect(303, entraLogoutUrl(config, signedOutUri(publicOrigin(get, ev.url))));
+  throw ev.redirect(
+    303,
+    entraLogoutUrl(config, signedOutUri(publicOrigin(get, ev.url))),
+  );
 };

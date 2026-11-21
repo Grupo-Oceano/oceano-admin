@@ -165,7 +165,9 @@ export default component$(() => {
         <div class="flex flex-col gap-4">
           <div class="flex flex-wrap gap-2" data-testid="badges">
             <Badge tone="warning">Pending</Badge>
-            <Badge tone="success" icon="check">Active</Badge>
+            <Badge tone="success" icon="check">
+              Active
+            </Badge>
             <Badge tone="danger">Disabled</Badge>
             <Badge tone="info">Owner</Badge>
             <Badge>moderator</Badge>

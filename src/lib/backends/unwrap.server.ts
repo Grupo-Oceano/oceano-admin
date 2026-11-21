@@ -16,11 +16,17 @@ type Redirecting = Pick<RequestEventCommon, "redirect" | "url">;
 export function loaderResult<T>(
   ev: Redirecting,
   [error, data]: Result<T>,
-  options: { message?: (error: ApiError) => string; signInOn401?: boolean } = {},
+  options: {
+    message?: (error: ApiError) => string;
+    signInOn401?: boolean;
+  } = {},
 ): { data: T | null; error: string | null } {
   if (error?.status === 401 && options.signInOn401 !== false)
     throw ev.redirect(302, loginUrl(returnPathOf(ev.url)));
   if (error)
-    return { data: null, error: options.message ? options.message(error) : error.message };
+    return {
+      data: null,
+      error: options.message ? options.message(error) : error.message,
+    };
   return { data, error: null };
 }

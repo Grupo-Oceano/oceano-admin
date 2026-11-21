@@ -26,7 +26,10 @@ export default component$(() => {
             Who can sign in to Oceano Admin, and their role on each site.
           </p>
         </div>
-        <nav aria-label="Access sections" class="inline-flex self-start rounded-full bg-surface-3 p-1">
+        <nav
+          aria-label="Access sections"
+          class="bg-surface-3 inline-flex self-start rounded-full p-1"
+        >
           <NavLink href="/access/" class={tab} activeClass={activeTab}>
             Staff
           </NavLink>

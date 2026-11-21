@@ -14,7 +14,9 @@ const now = Math.floor(Date.now() / 1000);
 /** Roughly the size and alphabet of a real Entra access token. */
 const fakeAccessToken = () => {
   const b64 = (n: number) =>
-    Buffer.from(crypto.getRandomValues(new Uint8Array(n))).toString("base64url");
+    Buffer.from(crypto.getRandomValues(new Uint8Array(n))).toString(
+      "base64url",
+    );
   return `${b64(60)}.${b64(900)}.${b64(256)}`;
 };
 
@@ -34,10 +36,15 @@ describe("seal / unseal", () => {
   });
 
   it("rejects a tampered ciphertext or tag", async () => {
-    const sealed = await seal({ exp: now + 60, role: "staff" }, SECRET, "admin-session");
+    const sealed = await seal(
+      { exp: now + 60, role: "staff" },
+      SECRET,
+      "admin-session",
+    );
     const flip = (index: number) => {
       const parts = sealed.split(".");
-      parts[index] = (parts[index][0] === "A" ? "B" : "A") + parts[index].slice(1);
+      parts[index] =
+        (parts[index][0] === "A" ? "B" : "A") + parts[index].slice(1);
       return parts.join(".");
     };
     expect(await unseal(flip(3), SECRET, "admin-session", now)).toBeNull();
@@ -83,7 +90,9 @@ describe("cookie chunks", () => {
   });
 
   it("refuses values that need more than three cookies", () => {
-    expect(() => splitIntoChunks("x".repeat(COOKIE_CHUNK_SIZE * 3 + 1))).toThrow();
+    expect(() =>
+      splitIntoChunks("x".repeat(COOKIE_CHUNK_SIZE * 3 + 1)),
+    ).toThrow();
   });
 
   it("a missing first chunk reads as no cookie", () => {

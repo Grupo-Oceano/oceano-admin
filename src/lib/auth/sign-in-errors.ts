@@ -6,7 +6,8 @@ export const SIGN_IN_ERRORS = {
     "The sign-in took too long or was opened in another tab. Please try again.",
   state:
     "The sign-in response didn't match this browser, so it was ignored. Please try again.",
-  exchange: "We couldn't finish signing you in with Microsoft. Please try again.",
+  exchange:
+    "We couldn't finish signing you in with Microsoft. Please try again.",
   session:
     "We couldn't keep your session in this browser. Tell an administrator.",
   rejected:

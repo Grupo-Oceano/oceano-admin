@@ -11,9 +11,11 @@ export const RPN_ERROR_CODES: Record<string, string> = {
   already_reviewed:
     "This request was already decided, so the decision wasn't changed. Reload to see the current state.",
   listing_not_in_review: "This listing is no longer waiting for review.",
-  strategy_required: "Choose how this listing will be managed before approving it.",
+  strategy_required:
+    "Choose how this listing will be managed before approving it.",
   status_request_not_found: "This request no longer exists.",
-  escapia_unit_taken: "That Escapia unit id is already linked to another property.",
+  escapia_unit_taken:
+    "That Escapia unit id is already linked to another property.",
   claimed_by_other: "Someone else claimed this property first.",
   not_pending_escapia: "This property is no longer waiting for Escapia keying.",
   not_in_escapia_queue: "This property is not in the Escapia keying queue.",
@@ -28,7 +30,8 @@ export const RPN_ERROR_CODES: Record<string, string> = {
   missing_token: "RockyPoint.net didn't receive your sign-in. Reload the page.",
   invalid_token:
     "RockyPoint.net rejected the Oceano Admin token. Its sign-in setup may be incomplete.",
-  "RPN_API_URL is not configured": "RockyPoint.net's API address (RPN_API_URL) is not configured.",
+  "RPN_API_URL is not configured":
+    "RockyPoint.net's API address (RPN_API_URL) is not configured.",
 };
 
 export const rpnErrorMessage = (error: ApiError): string =>
