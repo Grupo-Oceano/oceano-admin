@@ -1,0 +1,33 @@
+name: Build and Push Docker Image
+
+# Push to main → build oceanorentals/oceano-admin (semver + :latest, shared workflow) → deploy in Coolify
+# (project "Oceano Core Services" / production, app "Oceano Admin", on-prem). No staging app exists.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Push oceano-admin Docker Image
+    uses: Grupo-Oceano/shared-workflows/.github/workflows/cd-production.yml@main
+    with:
+      image: oceanorentals/oceano-admin
+      major: "0"
+      minor: "1"
+      keep_versions: 5
+      context: .
+      # The Dockerfile's last stage is `final` (the shared workflow defaults to `production`)
+      target: final
+    secrets: inherit
+
+  # Runtime env (PUBLIC_ORIGIN, ENTRA_*, ADMIN_SESSION_SECRET, CORE_API_URL, RPN_API_URL) lives in
+  # Coolify, not here: nothing is baked into the image. Skipped while the repo variable is unset.
+  coolify-deploy:
+    name: Deploy oceano-admin to Production (Coolify)
+    needs: build
+    if: vars.COOLIFY_OCEANO_ADMIN_RESOURCE_UUID_PRODUCTION != ''
+    uses: Grupo-Oceano/shared-workflows/.github/workflows/coolify-deploy.yml@main
+    with:
+      resource_uuid: ${{ vars.COOLIFY_OCEANO_ADMIN_RESOURCE_UUID_PRODUCTION }}
+    secrets: inherit
