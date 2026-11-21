@@ -96,6 +96,10 @@ const deny = (ev: Parameters<RequestHandler>[0], denied: AccessDenied) => {
   if (!ev.internalRequest) ev.status(403);
 };
 
+/** For actions: owners only (the layout decided who sees the page, not who may write). */
+export const isOwner = (ev: Pick<RequestEventBase, "sharedMap">): boolean =>
+  !!sessionOf(ev)?.staff.isOwner;
+
 /** `/access` layout: owners only. */
 export const requireOwner: RequestHandler = async (ev) => {
   if (!sessionOf(ev)?.staff.isOwner) deny(ev, { reason: "owner_only" });
