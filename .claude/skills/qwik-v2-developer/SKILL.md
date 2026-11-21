@@ -49,7 +49,7 @@ The data layer (backend clients, BFF auth, sockets): `references/data-layer.md`.
 ### `routeLoader$` — server-only reads
 - Export from `index.tsx` or `layout.tsx` only (re-export to share). Returns a signal; read `.value`.
 - **A pure function of the URL** (path params + declared search params). Never read action state or request bodies.
-- `search: [...]` declares the query params it reads (strict loaders): **an undeclared param never triggers a re-fetch**. Parse them with a zod schema that owns the defaults (`z.coerce.number().int().min(0).catch(0)`); see `routes/home/leads/index.tsx`.
+- `search: [...]` declares the query params it reads (strict loaders): **an undeclared param never triggers a re-fetch**. Parse them with a zod schema that owns the defaults (`z.coerce.number().int().min(0).catch(0)`); see `routes/(app)/leads/index.tsx`; `searchKeys(schema)` (`lib/crud/search-keys.ts`) derives `search` from it.
 - Failure: `throw ev.error(status, data)`, `throw ev.redirect(...)`, or — for panels and tables — return the error as data with `loaderResult` (`references/data-layer.md`).
 - Compose with `await ev.resolveValue(otherLoader)`. Options: `search`, `cacheControl`, `eTag`, `serializationStrategy`, `validation`.
 - Re-fetch: every SPA navigation, after actions, `signal.invalidate()` / `signal.clear()`.
@@ -57,17 +57,19 @@ The data layer (backend clients, BFF auth, sockets): `references/data-layer.md`.
 ### `routeAction$` — server-only writes
 - Declared in `layout.tsx`/`index.tsx` (`globalAction$` anywhere). Invoke with `<Form action={action}>` (works without JS) or `await action.submit(data)`.
 - Validate with `zod$(...)`. **Import `z` and `zod$` from `@qwik.dev/router`**; don't add `zod` as a dependency.
-- Return `ev.fail(status, { message })` for failures; `action.value.failed`, `.message` and `.fieldErrors.<name>` drive the form (`routes/login/index.tsx`). `throw ev.redirect(302, …)` to navigate on success.
+- Return `ev.fail(status, { message })` for failures; `action.value.failed`, `.message` and `.fieldErrors.<name>` drive the form (`routes/(app)/access/index.tsx`). `throw ev.redirect(302, …)` to navigate on success.
 - Loaders re-run after an action; don't patch caches. Dotted input names (`site.key`, `items.0.qty`) become nested objects.
 - UI state: `action.isRunning`, `action.status`, `action.value`, `action.formData`.
 - Every mutating action re-checks the caller's access server side; hiding a button secures nothing.
 
 ### Middleware & endpoints
-- `onRequest`/`onGet`/`onPost` in `layout.tsx` guard a subtree; the root `routes/layout.tsx` runs the auth guard for every route. Per-request data goes through `ev.sharedMap`.
+- `onRequest`/`onGet`/`onPost` in `layout.tsx` guard a subtree; `routes/(app)/layout.tsx` (and its named `layout-checkout.tsx`) runs the Entra guard for every signed-in route; `/auth/*` is public. Per-request data goes through `ev.sharedMap`.
 - **A page's own `onRequest`/`onGet` don't run on SPA navigation** unless the page has a `routeLoader$`: a SPA navigation only requests the route's loaders. Put a leaf page's guard or redirect in the layout, or in a page `routeLoader$` the component reads (`throw ev.redirect(...)`).
 - **Never a redirecting loader on an index page that has child routes**: the router runs that path's page loaders as guards when a layout is entered, so the redirect fires on every navigation below it. Redirect there in `onGet` (document requests) and, for SPA navigation, in the component.
-- REST/JSON/file responses are endpoints (`onGet` in a route without a default export), e.g. `routes/home/leads/download/index.ts` streaming a CSV with `ev.send(new Response(body, { headers }))`.
-- Trailing slashes are on (router default): `/login` 301s to `/login/`.
+- REST/JSON/file responses are endpoints (`onGet` in a route without a default export), e.g. `routes/(app)/leads/download/index.ts` streaming a CSV with `ev.send(new Response(body, { headers }))`.
+- Trailing slashes are on (router default): pages 301 `/access` to `/access/`; endpoints (no default export) don't.
+- **A middleware redirect during SPA navigation is followed by the client router as a SPA navigation**: a redirect target that must be a full page load (an endpoint, an external IdP) needs a page that reloads itself (see `routes/auth/login/index.tsx`).
+- **Each `useXxx()` call of a `routeAction$` is its own store**: watch (toast) the same instance the `<Form>` submits.
 
 ## 5. Browser-only code
 - `useVisibleTask$` runs only in the browser; use it sparingly (sockets, `showModal()`, reading the DOM). A component that renders no element of its own (a context provider around `<Slot />`) or a closed `<dialog>`/popover never becomes visible: pass `{ strategy: 'document-ready' }`.

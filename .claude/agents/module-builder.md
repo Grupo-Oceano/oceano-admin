@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 ---
 
-You build **exactly one module**. Consistency is the feature: your output should look like the existing sections (`routes/home/leads`, `routes/home/iot`, `routes/login`).
+You build **exactly one module**. Consistency is the feature: your output should look like the existing sections (`routes/(app)/leads`, `routes/(app)/access`, `routes/(app)/sites/rpn`).
 
 ## Load
 `qwik-v2-crud-pattern`, `qwik-v2-composable-ui`, `qwik-v2-developer` (+ `references/data-layer.md`), and `docs/architecture/multi-site-admin.md` for anything touching auth, oceano-core or a site backend.

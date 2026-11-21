@@ -127,6 +127,19 @@ audit page: `{items:[{id,actorId,action,targetType,targetId,before,after,created
 - A site module's layout guards with `requireSite('rpn')` (no grant → 403 page); actions re-check
   server side. The site backend checks again: the BFF is not the security boundary.
 
+As built (oceano-admin `dev`, 2026-11-20): sign-in routes `/auth/login` (a page: document requests
+redirect to Entra, SPA arrivals reload), `/auth/callback`, `POST /auth/logout`, `/auth/signed-out`,
+`/auth/sign-in` (`?error=entra|expired|state|exchange|session|rejected|unavailable`, and "not
+configured"), `/auth/not-enabled` (`?reason=not_enabled|disabled|identity_conflict`). Cookies:
+`oa_session` (chunked `oa_session.1/.2`, path `/`, httpOnly, SameSite=Lax, Secure on https,
+expires 60 s before the token) and `oa_login` (10 min, path `/auth/callback`). The guard is the
+`onRequest` of `src/routes/(app)/layout.tsx` (+ `layout-checkout.tsx`); `GET /admin/me` is cached
+10 s per token; a 401 within 2 min of sign-in shows `?error=rejected` instead of looping. The legacy
+modules moved from `/home/*` to `/dashboard`, `/infrastructure`, `/backups`, `/iot`, `/leads`,
+`/ui-test` (old URLs 301) and are visible to **every signed-in staff member** for now (no
+per-module grant yet). `/access` is owners only; `/sites/rpn` needs an `rpn` grant (owners pass).
+Setup: [../setup/entra.md](../setup/entra.md).
+
 ## Environment (oceano-admin)
 
 | Variable | Value |

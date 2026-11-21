@@ -7,13 +7,15 @@ Where it is going: [docs/architecture/multi-site-admin.md](../docs/architecture/
 ## Stack
 - Qwik v2 — `@qwik.dev/core` + `@qwik.dev/router` **2.0.0-rc.4** (exact, all `@qwik.dev/*` on the same version), node-server adapter (no SSG), Vite 8, Tailwind 4, `tailwind-variants` + `tailwind-merge`, `@floating-ui/dom`, `socket.io-client`.
 - UI lib: `src/components/ui` (native primitives, imported via `~/components/ui`). No Qwik v1 libraries.
-- Backends are called server side only, through `src/lib/backends/*.server.ts` (native fetch, `Result<T>` tuples). Today: oceano-core at `API_URL`, legacy username/password login (`auth` httpOnly cookie, guard in `src/routes/layout.tsx`).
-- Production: Docker image runs nginx (port 80, proxies `/backbone/api` and `/socket.io` to `oceano-backbone:3000`) in front of `node server/entry.node-server.js` (port 3000).
+- Backends are called server side only, through `src/lib/backends/*.server.ts` (native fetch, `Result<T>` tuples): oceano-core at `CORE_API_URL` (Entra Bearer), RockyPoint.net at `RPN_API_URL` (core site token).
+- Sign-in: Microsoft Entra BFF (`src/lib/auth`, `src/routes/auth/*`), encrypted `oa_session` cookie; the guard is `src/routes/(app)/layout.tsx` (`GET /admin/me`). Setup: `docs/setup/entra.md`; env: `.env.example`.
+- Routes: `/` sites home, `/access` (owners), `/sites/rpn` (rpn grant), legacy modules `/dashboard`, `/infrastructure`, `/backups`, `/iot`, `/leads` (every signed-in staff member), `/ui-test` showcase.
+- Production: Docker image runs nginx (port 80, proxies `/socket.io` to `oceano-backbone:3000`) in front of `node server/entry.node-server.js` (port 3000).
 
 ## Commands (pnpm)
-- `pnpm install` · `pnpm dev` (SSR dev server, http://localhost:5173; needs `API_URL` in `.env` or the shell for anything past /login)
-- `pnpm build` (client `dist/` + server `server/`, then tsc + lint) · `pnpm build.types` · `pnpm lint` · `pnpm fmt`
-- `pnpm serve` runs the production build (`PORT`, `API_URL`).
+- `pnpm install` · `pnpm dev` (SSR dev server, http://localhost:5173; needs the vars from `.env.example` in `.env` or the shell; without the Entra ones every page shows "Staff sign-in is not configured")
+- `pnpm build` (client `dist/` + server `server/`, then tsc + lint) · `pnpm build.types` · `pnpm lint` · `pnpm test` (vitest, pure server-side parts) · `pnpm fmt`
+- `pnpm serve` runs the production build (`PORT` + the `.env.example` vars).
 
 ## Conventions
 - Work on the **local `dev` branch** in the main checkout; no git worktrees. **Never push or open a PR unless asked.** Small logical commits are fine when asked to commit.
@@ -21,4 +23,4 @@ Where it is going: [docs/architecture/multi-site-admin.md](../docs/architecture/
 - No token in the browser; every mutating action re-checks access server side.
 - Before Qwik work load the skills: `qwik-v2-developer` (+ `references/data-layer.md`), `qwik-v2-composable-ui` for any UI, `qwik-v2-crud-pattern` for list/form screens. The Qwik MCP (`.mcp.json`) is the API source of truth.
 - Agents: `platform-steward` (shared UI/lib/shell/auth), `module-builder` (one section), `admin-reviewer` (read-only review before committing).
-- Done means `pnpm build.types`, `pnpm lint` and `pnpm build` pass, and touched pages were checked in the browser.
+- Done means `pnpm build.types`, `pnpm lint`, `pnpm test` and `pnpm build` pass, and touched pages were checked in the browser.

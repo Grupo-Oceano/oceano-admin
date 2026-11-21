@@ -7,7 +7,7 @@ description: Rules and APIs for oceano-admin's composable UI lib (src/components
 
 **Hard rules:** work on the local `dev` branch in the main checkout (no git worktrees); never push or open a PR unless the user asks. Read `qwik-v2-developer` first.
 
-The lib replaced flowbite-qwik, @qwik-ui/headless and @modular-forms/qwik (Qwik v1 only). It is small on purpose: add a primitive when a second screen needs the same shape, not before. `/home/ui-test` (the showcase route, `index@checkout.tsx`) renders every primitive; add new ones there.
+The lib replaced flowbite-qwik, @qwik-ui/headless and @modular-forms/qwik (Qwik v1 only). It is small on purpose: add a primitive when a second screen needs the same shape, not before. `/ui-test` (the showcase route, `routes/(app)/ui-test/index@checkout.tsx`) renders every primitive; add new ones there.
 
 ## Layout and boundaries
 ```
@@ -17,11 +17,12 @@ src/components/ui/
   primitives/      button (Button, button()), icon, spinner, menu, popover, dialog, close-button;
                    helpers: anchor (pin/release via @floating-ui/dom), keyboard, panel
   forms/           field (Field, Label, Description), input, select
-  feedback/        toast (ToastProvider, useToast), alert (Alert, ErrorState), skeleton
+  feedback/        toast (ToastProvider, useToast), alert (Alert, ErrorState), badge (Badge, badge()), skeleton
   data-view/       data-table (DataTable, table(), Column), paginator, avatar, get-path
   layout/          card(), heading(), divider()  (tv() class helpers)
-src/components/shell/    app chrome that knows routes/session: Sidebar, Uppernav, UserMenu, NavLink, ThemeToggle, LoginLayout
-src/components/modules/  per-section components (infrastructure, iot, backups)
+src/components/shell/    app chrome that knows routes/session: Sidebar, Uppernav, UserMenu, nav.ts, NavLink, ThemeToggle,
+                         LoginLayout, AuthCard, Forbidden (a section layout's 403 view)
+src/components/modules/  per-section components (infrastructure, iot, backups, access, rpn)
 ```
 - The lib knows nothing about routes, backends or the session: data comes in through props, actions through QRL props. Anything that needs `useLocation`, `Link` or a loader belongs in `components/shell` or a module.
 - Every interactive part takes `testId` and renders it as `data-testid`.
@@ -44,7 +45,7 @@ Staff use the panel on laptops, and also on tablets and phones.
 - Touch targets ≥ 44px on coarse pointers (`pointer-coarse:min-h-11`, `pointer-coarse:size-11`), ≥ 8px apart (`gap-2`). Nothing depends on hover: every hover affordance has a focus/tap equivalent.
 - Text inputs are `text-base` (16px) on phones so iOS doesn't zoom. Use the right `type`, `inputMode`, `autocomplete`.
 - Native controls first (`<select>`, `<dialog>`, `popover`); they work before JS resumes and on touch.
-- Known gap: the `/home` shell (fixed 10-column grid) is desktop-only today; making it responsive is its own change.
+- The `(app)` shell: sidebar from `lg` up; below that the top bar carries the navigation and account menus.
 
 ## Primitives (Headless UI's API, native underneath)
 - **Button** — `intent` `primary | secondary | success | danger | ghost`, `size` `sm | md | icon`, `block`, `icon` (Material Symbol), `loading` (spinner, disabled), `type` defaults to `button`.
@@ -55,6 +56,7 @@ Staff use the panel on laptops, and also on tablets and phones.
 - **Field / Label / Description** — wire ids, `aria-describedby` and `invalid`/`disabled` to the control inside. In an invalid Field the Description reads as the error.
 - **Input** — native `<input>` with optional leading `icon`; posts by `name` with the surrounding `<Form>`; `bind:value` when the value must live in a signal. **Select** — native `<select>` with the field look.
 - **Toast** — `ToastProvider` is mounted once in `root.tsx`; `const { add } = useToast(); add(summary, 'success' | 'info' | 'warn' | 'error', detail?, lifeMs?)`.
+- **Badge** — status pill: `<Badge tone="success|warning|danger|info|muted" icon>`.
 - **Alert** — `<Alert tone="success|warning|danger|info|muted" icon title onDismiss$ role>`; **ErrorState** — the centred terminal error for a panel; **Skeleton**, **Spinner**, **Avatar** (`src` or initials from `name`).
 - **Qwik gotchas the primitives already handle** (follow them in new ones):
   - `preventDefault` must be sync: `onKeyDown$={[preventNavKeys, $(handler)]}` (or `sync$`).
@@ -81,7 +83,7 @@ const columns: Column<Guest>[] = [
 
 ## Table pages
 - The loader returns `{ query, rows, total, error }` using `loaderResult` (data-layer reference): a backend failure renders inside the table, the page and paginator stay.
-- The URL owns the page (`?offset=&take=`, declared in the loader's `search`). The page keeps a `busy` signal around `await nav('?offset=…&take=…', { replaceState: true })`, dims the table and passes `disabled={busy.value}` to the `Paginator`. Reference: `routes/home/leads/index.tsx`.
+- The URL owns the page (`?offset=&take=`, declared in the loader's `search`). The page keeps a `busy` signal around `await nav('?offset=…&take=…', { replaceState: true })`, dims the table and passes `disabled={busy.value}` to the `Paginator`. Reference: `routes/(app)/leads/index.tsx`.
 - **Don't** swap the page for a skeleton on navigation, and don't use `useLocation().isNavigating` for a table's busy state (it is global).
 - `Paginator`: `total`, `offset`, `take`, `takeOptions`, `onChange$({ offset, take })`, `disabled`, `testId`.
 
@@ -99,4 +101,4 @@ Before creating a component in a module folder, check in order:
 - [ ] Colours: stock Tailwind with a `dark:` twin, or a surface/status token; accent `sky`; no hex, no new tokens.
 - [ ] Mobile first, ≥ 44px touch targets on coarse pointers, nothing hover-only, 16px inputs on phones, no sideways page scroll.
 - [ ] No new `.css` outside `theme.css`; looks via `tv()`; `class` overrides go through tailwind-merge.
-- [ ] `testId` wired on interactive parts; new primitives shown on `/home/ui-test`.
+- [ ] `testId` wired on interactive parts; new primitives shown on `/ui-test`.
