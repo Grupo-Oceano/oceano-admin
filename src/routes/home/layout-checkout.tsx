@@ -1,58 +1,36 @@
-import { component$, Slot } from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
-import ThemeToggle from "~/components/etc/system/ThemeToggle";
-import Button from "~/components/etc/ui/Button";
-import Icon from "~/components/etc/ui/Icon";
+import { component$, Slot } from "@qwik.dev/core";
+import { useNavigate } from "@qwik.dev/router";
+import ThemeToggle from "~/components/shell/ThemeToggle";
+import { Button } from "~/components/ui";
 
+/** Full-width layout for `index@checkout` pages: a header with "Back" and the theme toggle, no sidebar. */
 export default component$(() => {
   const navigate = useNavigate();
-
-  // Simula tus props/lógica real aquí
-  const logoURL = "/logo.png";
-  const disabled = () => false;
-  const routeLink = () => ""; // pon aquí la ruta si aplica
-  const buttonTitle = () => "Volver";
-
   return (
-    <div class="flex h-screen w-screen flex-col bg-gray-200 dark:bg-gray-800">
-      <header class="flex h-28 w-full flex-row items-center justify-between bg-gray-100 p-6 px-10 dark:bg-gray-900">
+    <div class="flex h-dvh w-screen flex-col bg-gray-200 dark:bg-gray-800">
+      <header class="flex h-28 w-full flex-row items-center justify-between bg-gray-100 p-6 px-10 dark:bg-gray-900 print:hidden">
         <img
           src="/favicon.png"
           alt="logo"
-          style={{ maxWidth: "200px", maxHeight: "100px" }}
+          width={100}
+          height={100}
+          class="max-h-25 max-w-50"
         />
-
-        {!disabled() && (
-          <div class="animate-slideInFromLeft flex flex-row items-center gap-2">
-            {routeLink() ? (
-              <Button
-                style="secondary"
-                href={routeLink()}
-                title={buttonTitle()}
-                class="d-print-none flex flex-row items-center gap-1"
-              >
-                <Icon icon="arrow_back" class="text-xl" />
-                {buttonTitle()}
-              </Button>
-            ) : (
-              <Button
-                style="secondary"
-                type="button"
-                title={buttonTitle()}
-                class="d-print-none flex flex-row items-center gap-1"
-                onClick$={() => navigate("../")}
-              >
-                <Icon icon="arrow_back" class="text-xl" />
-                {buttonTitle()}
-              </Button>
-            )}
-
-            <ThemeToggle classes="d-print-none" />
-          </div>
-        )}
+        <div class="flex flex-row items-center gap-2">
+          <Button
+            intent="secondary"
+            icon="arrow_back"
+            title="Back"
+            onClick$={() => navigate("../")}
+          >
+            Back
+          </Button>
+          <ThemeToggle />
+        </div>
       </header>
-
-      <Slot />
+      <div class="min-h-0 flex-1 overflow-auto">
+        <Slot />
+      </div>
     </div>
   );
 });

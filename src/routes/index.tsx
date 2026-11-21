@@ -1,16 +1,9 @@
-import { component$, Slot } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$ } from "@qwik.dev/core";
+import type { DocumentHead } from "@qwik.dev/router";
 
-export default component$(() => {
-  return <Slot />;
-});
+// The root layout's guard always redirects `/` (to /home or /login); this page only exists to match the path.
+export default component$(() => <></>);
 
 export const head: DocumentHead = {
-  title: "Welcome to Qwik",
-  meta: [
-    {
-      name: "description",
-      content: "Qwik site description",
-    },
-  ],
+  title: "Oceano Admin",
 };

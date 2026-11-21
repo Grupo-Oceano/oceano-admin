@@ -1,57 +1,57 @@
-import { $, component$, QRL } from "@builder.io/qwik";
-import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
+import { component$ } from "@qwik.dev/core";
 import {
-  InitialValues,
-  SubmitHandler,
-  useForm,
-  valiForm$,
-} from "@modular-forms/qwik";
-import { Auth } from "~/api/auth";
-import { LoginForm, LoginSchema } from "~/common/forms/login-form";
-import ActionButton from "~/components/etc/forms/ActionButton";
-import Response from "~/components/etc/forms/Response";
-import TextInput from "~/components/etc/forms/TextInput";
+  Form,
+  routeAction$,
+  z,
+  zod$,
+  type DocumentHead,
+} from "@qwik.dev/router";
+import {
+  Alert,
+  Button,
+  Description,
+  Field,
+  Input,
+  Label,
+} from "~/components/ui";
+import { authCookieOptions, AUTH_COOKIE } from "~/lib/auth/cookies";
+import { coreApi } from "~/lib/backends/core.server";
+import type { UserLogin } from "~/models/user.model";
 
-export const useFormLoader = routeLoader$<InitialValues<LoginForm>>(() => ({
-  username: "",
-  password: "",
-}));
+/** Signs in against oceano-core and keeps its token in the httpOnly `auth` cookie; the browser never sees it. */
+export const useLogin = routeAction$(
+  async (credentials, ev) => {
+    const [error, res] = await coreApi(ev).post<UserLogin>(
+      "/auth/login",
+      credentials,
+    );
+    if (error || !res?.token) {
+      return ev.fail(error?.status ?? 401, {
+        message: error?.message ?? "Invalid credentials",
+      });
+    }
+    ev.cookie.set(AUTH_COOKIE, res.token, authCookieOptions(ev.url));
+    throw ev.redirect(302, "/home");
+  },
+  zod$({
+    username: z.string().trim().min(1, "Please enter your username."),
+    password: z
+      .string()
+      .min(1, "Please enter your password.")
+      .min(8, "Your password must have 8 characters or more."),
+  }),
+);
 
 export default component$(() => {
-  const [loginForm, { Form, Field }] = useForm<LoginForm>({
-    loader: useFormLoader(),
-    validate: valiForm$(LoginSchema), // ✅ Only validate client-side
-  });
-
-  const nav = useNavigate();
-
-  const handleSubmit: QRL<SubmitHandler<LoginForm>> = $(
-    async (values, event) => {
-      event.preventDefault(); // Prevent default form submission
-      const [error, res] = await Auth.login(values.username, values.password);
-
-      if (error || !res) {
-        return (loginForm.response = {
-          status: "error",
-          message: error?.message,
-        });
-      }
-
-      loginForm.response = {
-        status: "success",
-        message: res.message,
-      };
-
-      // Redirect after successful login (replace '/dashboard' with your target route)
-      await nav("/home");
-    },
-  );
+  const login = useLogin();
+  const errors = login.value?.fieldErrors;
+  const failure = login.value?.failed ? login.value.message : undefined;
 
   return (
-    <div class="flex flex-col gap-3 bg-transparent px-8 lg:max-w-none lg:px-4">
+    <div class="flex w-full flex-col gap-3 bg-transparent lg:px-4">
       <div class="mb-4 flex flex-row items-center gap-2 whitespace-nowrap">
         <hr class="my-2 flex-1 border-gray-300 dark:border-gray-600" />
-        <h1 class="w-auto font-bold text-sky-600 opacity-75 dark:text-sky-400">
+        <h1 class="font-bold text-sky-600 opacity-75 dark:text-sky-400">
           Sign In
         </h1>
         <hr class="my-2 flex-1 border-gray-300 dark:border-gray-600" />
@@ -61,51 +61,49 @@ export default component$(() => {
         Please enter your credentials
       </h3>
 
-      <Form id="login-form" onSubmit$={handleSubmit}>
-        <Field name="username">
-          {(field, props) => (
-            <TextInput
-              {...props}
-              value={field.value}
-              error={field.error}
-              type="text"
-              label="Username"
-              placeholder="Username@123"
-              required
-              labelClass="text-gray-800 dark:text-white lg:text-gray-500 lg:dark:text-gray-200"
-            />
-          )}
+      <Form action={login} class="flex flex-col gap-4" data-testid="login-form">
+        <Field invalid={!!errors?.username}>
+          <Label required>Username</Label>
+          <Input
+            name="username"
+            type="text"
+            placeholder="Username@123"
+            autocomplete="username"
+            required
+            testId="login-username"
+          />
+          {errors?.username && <Description>{errors.username}</Description>}
         </Field>
-        <Field name="password">
-          {(field, props) => (
-            <TextInput
-              {...props}
-              value={field.value}
-              error={field.error}
-              type="password"
-              label="Password"
-              placeholder="********"
-              required
-              labelClass="text-gray-800 dark:text-white lg:text-gray-500 lg:dark:text-gray-200"
-            />
-          )}
+        <Field invalid={!!errors?.password}>
+          <Label required>Password</Label>
+          <Input
+            name="password"
+            type="password"
+            placeholder="********"
+            autocomplete="current-password"
+            required
+            minLength={8}
+            testId="login-password"
+          />
+          {errors?.password && <Description>{errors.password}</Description>}
         </Field>
 
-        <Response class="" of={loginForm} />
+        {failure && (
+          <Alert tone="danger" icon="error" role="alert" testId="login-error">
+            {failure}
+          </Alert>
+        )}
+
+        <Button
+          type="submit"
+          icon="login"
+          loading={login.isRunning}
+          class="lg:self-start"
+          testId="login-submit"
+        >
+          Log In
+        </Button>
       </Form>
-
-      <ActionButton
-        variant="primary"
-        label="Log In"
-        type="submit"
-        form="login-form"
-        class="h-10 w-full bg-sky-600 px-5 text-white hover:bg-sky-600/80 lg:w-auto dark:bg-sky-400 dark:text-gray-900 dark:hover:bg-sky-400/80"
-        disabled={loginForm.submitting}
-      >
-        <span class="material-symbol" q:slot="iconBefore">
-          login
-        </span>
-      </ActionButton>
 
       <small class="mt-auto mb-4 text-start text-gray-500 dark:text-gray-400">
         If you don't have an account, please contact your administrator.
@@ -114,6 +112,6 @@ export default component$(() => {
   );
 });
 
-export const head = {
+export const head: DocumentHead = {
   title: "Grupo Oceano - Login",
 };

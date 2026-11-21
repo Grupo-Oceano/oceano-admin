@@ -1,15 +1,12 @@
-import { nodeServerAdapter } from "@builder.io/qwik-city/adapters/node-server/vite";
-import { extendConfig } from "@builder.io/qwik-city/vite";
-import baseConfig from "../../vite.config";
+import { nodeServerAdapter } from "@qwik.dev/router/adapters/node-server/vite";
+import { extendConfig } from "@qwik.dev/router/vite";
+import baseConfig from "../../vite.config.ts";
 
-export default extendConfig(baseConfig, () => {
-  return {
-    build: {
-      ssr: true,
-      rollupOptions: {
-        input: ["src/entry.node-server.tsx", "@qwik-city-plan"],
-      },
-    },
-    plugins: [nodeServerAdapter({ name: "node-server" })],
-  };
-});
+export default extendConfig(baseConfig, () => ({
+  build: {
+    ssr: true,
+    rolldownOptions: { input: ["src/entry.node-server.tsx"] },
+  },
+  // No SSG: every page sits behind the auth guard and reads runtime env (API_URL), so prerendering has nothing to bake.
+  plugins: [nodeServerAdapter({ name: "node-server", ssg: null })],
+}));

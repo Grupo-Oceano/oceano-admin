@@ -1,63 +1,34 @@
 import js from "@eslint/js";
+import { qwikEslint9Plugin } from "eslint-plugin-qwik";
+import { globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { globalIgnores } from "eslint/config";
-import { qwikEslint9Plugin } from "eslint-plugin-qwik";
-
-const ignores = [
-  "**/*.log",
-  "**/.DS_Store",
-  "**/*.",
-  ".vscode/settings.json",
-  "**/.history",
-  "**/.yarn",
-  "**/bazel-*",
-  "**/bazel-bin",
-  "**/bazel-out",
-  "**/bazel-qwik",
-  "**/bazel-testlogs",
-  "**/dist",
-  "**/dist-dev",
-  "**/lib",
-  "**/lib-types",
-  "**/etc",
-  "**/external",
-  "**/node_modules",
-  "**/temp",
-  "**/tsc-out",
-  "**/tsdoc-metadata.json",
-  "**/target",
-  "**/output",
-  "**/rollup.config.js",
-  "**/build",
-  "**/.cache",
-  "**/.vscode",
-  "**/.rollup.cache",
-  "**/dist",
-  "**/tsconfig.tsbuildinfo",
-  "**/vite.config.ts",
-  "**/*.spec.tsx",
-  "**/*.spec.ts",
-  "**/.netlify",
-  "**/pnpm-lock.yaml",
-  "**/package-lock.json",
-  "**/yarn.lock",
-  "**/server",
-  "eslint.config.js",
-];
 
 export default tseslint.config(
-  globalIgnores(ignores),
+  globalIgnores([
+    "**/node_modules",
+    "dist/**",
+    "server/**",
+    "tmp/**",
+    "**/*.timestamp*",
+    "**/vite.config.ts",
+    "adapters/**",
+    "eslint.config.js",
+    ".prettierrc.js",
+  ]),
   js.configs.recommended,
   tseslint.configs.recommended,
-  qwikEslint9Plugin.configs.recommended,
+  // The Qwik rules need type information, so they only run on the app's TypeScript sources.
+  ...qwikEslint9Plugin.configs.recommended.map((c) => ({
+    ...c,
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+  })),
   {
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.node,
         ...globals.es2021,
-        ...globals.serviceworker,
       },
       parserOptions: {
         projectService: true,
@@ -68,6 +39,27 @@ export default tseslint.config(
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  // `*.server.ts` modules never reach the browser. Components may import their types only; routes,
+  // entries and other server modules use them for loaders, actions and middleware.
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    ignores: ["src/routes/**", "src/**/*.server.ts", "src/entry.*"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/*.server", "**/*.server.*"],
+              allowTypeImports: true,
+              message:
+                "Server-only module: import its types only, or call it from a routeLoader$/routeAction$/server$.",
+            },
+          ],
+        },
+      ],
     },
   },
 );

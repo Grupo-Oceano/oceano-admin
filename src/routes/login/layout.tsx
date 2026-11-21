@@ -1,13 +1,9 @@
-import { component$, Slot } from "@builder.io/qwik";
-import LoginLayot from "~/components/layouts/LoginLayout";
-import { authGuard } from "~/lib/auth-guard";
+import { component$, Slot } from "@qwik.dev/core";
+import LoginLayout from "~/components/shell/LoginLayout";
 
-export const onRequest = authGuard;
-
-export default component$(() => {
-  return (
-    <LoginLayot>
-      <Slot />
-    </LoginLayot>
-  );
-});
+// The root layout's guard already covers /login (signed-in users go to /home).
+export default component$(() => (
+  <LoginLayout>
+    <Slot />
+  </LoginLayout>
+));

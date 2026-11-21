@@ -1,5 +1,5 @@
-import { component$ } from "@builder.io/qwik";
-import Icon from "~/components/etc/ui/Icon";
+import { component$ } from "@qwik.dev/core";
+import { Icon } from "~/components/ui";
 import { MetricsInfo } from "~/models/infra.model";
 import MetricsCard from "./MetricsCard";
 

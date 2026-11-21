@@ -1,40 +1,29 @@
-/*
- * WHAT IS THIS FILE?
- *
- * It's the entry point for the Express HTTP server when building for production.
- *
- * Learn more about Node.js server integrations here:
- * - https://qwik.dev/docs/deployments/node/
- *
+/**
+ * Production HTTP server (`pnpm serve`), behind nginx (nginx.conf) on port 3000.
+ * Set ORIGIN (e.g. https://admin.oceanorentals.net) so CSRF checks and cookies see the public URL.
  */
-import { createQwikCity } from "@builder.io/qwik-city/middleware/node";
-import qwikCityPlan from "@qwik-city-plan";
+import { createQwikRouter } from "@qwik.dev/router/middleware/node";
 import { createServer } from "node:http";
 import render from "./entry.ssr";
 
-// Allow for dynamic port
 const PORT = process.env.PORT ?? 3000;
 
-// Create the Qwik City express middleware
-const { router, notFound, staticFile } = createQwikCity({
+const { router, staticFile } = createQwikRouter({
   render,
-  qwikCityPlan,
-  static: {
-    cacheControl: "public, max-age=31536000, immutable",
-  },
+  static: { cacheControl: "public, max-age=31536000, immutable" },
+  // why: v1 ran with the origin check off (nginx forwards Host but ORIGIN was never set); kept until ORIGIN is configured.
   checkOrigin: false,
 });
 
 const server = createServer();
-
 server.on("request", (req, res) => {
   staticFile(req, res, () => {
     router(req, res, () => {
-      notFound(req, res, () => {});
+      res.statusCode = 404;
+      res.end();
     });
   });
 });
-
 server.listen(PORT, () => {
   console.log(`Node server listening on http://localhost:${PORT}`);
 });

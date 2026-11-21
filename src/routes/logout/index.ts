@@ -1,7 +1,10 @@
-import { RequestHandler } from "@builder.io/qwik-city/middleware/request-handler";
-import { Cookies } from "~/common/types";
+import type { RequestHandler } from "@qwik.dev/router";
+import { AUTH_COOKIE } from "~/lib/auth/cookies";
+import { clearAuthCache } from "~/lib/auth/guard.server";
 
 export const onPost: RequestHandler = async ({ cookie, redirect }) => {
-  cookie.delete(Cookies.AUTH, { path: "/" });
+  const token = cookie.get(AUTH_COOKIE)?.value;
+  if (token) clearAuthCache(token);
+  cookie.delete(AUTH_COOKIE, { path: "/" });
   throw redirect(302, "/login");
 };

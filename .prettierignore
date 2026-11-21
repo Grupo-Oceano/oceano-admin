@@ -9,10 +9,10 @@ bazel-bin
 bazel-out
 bazel-qwik
 bazel-testlogs
-dist
+/dist
 dist-dev
-lib
-lib-types
+/lib
+/lib-types
 #etc
 external
 node_modules
@@ -34,4 +34,4 @@ vite.config.ts
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
-server
+/server

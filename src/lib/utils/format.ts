@@ -60,3 +60,23 @@ export function getProgressColor(percentage: number): string {
   if (percentage >= 50) return "bg-blue-500";
   return "bg-green-500";
 }
+
+/**
+ * Date and time in the business time zone (America/Hermosillo), e.g. `11/20/2026, 09:15 PM`.
+ * Integers are Unix seconds (Docker's `Created`); strings and Dates parse as usual.
+ */
+export function formatDateTime(date: Date | string | number): string {
+  const d =
+    typeof date === "number" && Number.isInteger(date)
+      ? new Date(date * 1000)
+      : new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Hermosillo",
+  });
+}

@@ -1,14 +1,7 @@
-import { component$, Slot } from "@builder.io/qwik";
-import { authGuard } from "~/lib/auth-guard";
-import { SessionContextProvider } from "~/lib/stores/session-store";
+import { component$, Slot } from "@qwik.dev/core";
+import { authGuard } from "~/lib/auth/guard.server";
 
-// Root layout with auth guard
+// Every route sits behind the guard: signed out → /login, signed in → away from /login.
 export const onRequest = authGuard;
 
-export default component$(() => {
-  return (
-    <SessionContextProvider>
-      <Slot />
-    </SessionContextProvider>
-  );
-});
+export default component$(() => <Slot />);
